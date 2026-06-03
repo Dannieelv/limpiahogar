@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Panel Limpiador — LimpiaHogar</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Display:wght@600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --accent:   #e07a85;
+      --accent-d: #c4555f;
+      --success:  #16A34A;
+      --warning:  #D97706;
+      --danger:   #DC2626;
+      --purple:   #5b21b6;
+      --surface:  #FFFFFF;
+      --surface-2:#fafafa;
+      --text:     #111827;
+      --muted:    #6B7280;
+      --border:   #E5E7EB;
+      --primary:  #F2D9DC;
+      --secondary:#D9F2D8;
+      --r-sm:8px; --r-md:16px; --r-lg:24px; --r-xl:32px;
+      --sh-sm:0 1px 4px rgba(0,0,0,.06);
+      --sh-md:0 4px 16px rgba(0,0,0,.10);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', sans-serif; color: var(--text); background: var(--surface-2); line-height: 1.6; }
+    h1,h2,h3 { font-family: 'Noto Serif Display', serif; font-weight: 700; }
+    button { cursor: pointer; font-family: inherit; border: none; }
+
+    /* ── LOGIN ─────────────────────────────────────────── */
+    .login-wrap {
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      padding: 24px;
+    }
+    .login-card {
+      background: #fff; border-radius: var(--r-xl); padding: 40px;
+      max-width: 380px; width: 100%; box-shadow: var(--sh-md);
+      text-align: center;
+    }
+    .login-logo { font-family: 'Noto Serif Display', serif; font-size: 24px; font-weight: 700; color: var(--accent-d); margin-bottom: 6px; }
+    .login-logo span { color: var(--text); }
+    .login-sub { font-size: 13px; color: var(--muted); margin-bottom: 28px; }
+    .login-field { margin-bottom: 16px; text-align: left; }
+    .login-field label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 5px; }
+    .login-field input {
+      width: 100%; padding: 11px 14px; border: 1.5px solid var(--border);
+      border-radius: var(--r-md); font-size: 14px; font-family: inherit;
+      outline: none; transition: border-color .2s;
+    }
+    .login-field input:focus { border-color: var(--accent); }
+    .btn-login {
+      width: 100%; background: var(--accent); color: #fff; font-size: 15px; font-weight: 600;
+      padding: 13px; border-radius: var(--r-xl); margin-top: 8px;
+      transition: background .2s; box-shadow: 0 4px 14px rgba(224,122,133,.3);
+    }
+    .btn-login:hover { background: var(--accent-d); }
+    .login-error { font-size: 13px; color: var(--danger); margin-top: 10px; display: none; }
+
+    /* ── PANEL ─────────────────────────────────────────── */
+    .panel { display: none; min-height: 100vh; }
+
+    /* TOP BAR */
+    .topbar {
+      background: var(--text); color: #fff; padding: 0 24px;
+      display: flex; align-items: center; justify-content: space-between; height: 60px;
+      position: sticky; top: 0; z-index: 50;
+    }
+    .topbar__logo { font-family: 'Noto Serif Display', serif; font-size: 18px; font-weight: 700; }
+    .topbar__logo span { color: var(--primary); }
+    .topbar__right { display: flex; align-items: center; gap: 16px; }
+    .topbar__user { font-size: 13px; color: #9CA3AF; }
+    .btn-logout { background: #374151; color: #fff; font-size: 12px; font-weight: 600; padding: 7px 14px; border-radius: var(--r-xl); transition: background .2s; }
+    .btn-logout:hover { background: #4B5563; }
+
+    /* MAIN */
+    .panel-main { max-width: 1200px; margin: 0 auto; padding: 32px 24px; }
+    .panel-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; margin-bottom: 28px; }
+    .panel-header h1 { font-size: 28px; }
+    .today-badge { background: var(--primary); color: var(--accent-d); font-size: 13px; font-weight: 600; padding: 8px 18px; border-radius: var(--r-xl); }
+
+    /* STATS ROW */
+    .panel-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 32px; }
+    .pstat { background: #fff; border: 1px solid var(--border); border-radius: var(--r-lg); padding: 20px; }
+    .pstat__num { font-family: 'Noto Serif Display', serif; font-size: 32px; font-weight: 700; }
+    .pstat__label { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .pstat--accent .pstat__num { color: var(--accent-d); }
+    .pstat--success .pstat__num { color: var(--success); }
+    .pstat--purple .pstat__num { color: var(--purple); }
+
+    /* LAYOUT */
+    .panel-layout { display: grid; grid-template-columns: 1fr 340px; gap: 24px; align-items: start; }
+    @media (max-width: 900px) { .panel-layout { grid-template-columns: 1fr; } }
+
+    /* CALENDARIO PANEL */
+    .cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 8px; }
+    .cal-header h2 { font-size: 20px; }
+    .cal-nav-btn { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--r-md); padding: 7px 12px; font-size: 14px; transition: background .15s; }
+    .cal-nav-btn:hover { background: var(--primary); }
+
+    .view-toggle { display: flex; gap: 4px; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--r-md); padding: 3px; }
+    .view-btn { padding: 6px 14px; border-radius: var(--r-sm); font-size: 13px; font-weight: 600; background: transparent; color: var(--muted); transition: all .15s; }
+    .view-btn.active { background: #fff; color: var(--text); box-shadow: var(--sh-sm); }
+
+    .week-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+    .pcol { display: flex; flex-direction: column; gap: 3px; }
+    .pcol__head { text-align: center; font-size: 11px; font-weight: 600; color: var(--muted); padding: 6px 2px; text-transform: uppercase; letter-spacing: .04em; }
+    .pcol__date { text-align: center; font-size: 12px; font-weight: 600; padding: 5px; border-radius: var(--r-sm); margin-bottom: 3px; cursor: pointer; transition: background .15s; }
+    .pcol__date:hover { background: var(--primary); }
+    .pcol__date.today { background: var(--accent); color: #fff; }
+    .pcol__date.has-events { position: relative; }
+    .pcol__date.has-events::after { content: ''; position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%); width: 5px; height: 5px; border-radius: 50%; background: var(--success); }
+
+    .pslot { padding: 5px 3px; border-radius: var(--r-sm); text-align: center; font-size: 10px; font-weight: 500; line-height: 1.3; min-height: 24px; }
+    .pslot--free { background: var(--surface-2); color: #9CA3AF; }
+    .pslot--booked-single { background: var(--primary); color: var(--accent-d); cursor: pointer; transition: opacity .15s; }
+    .pslot--booked-single:hover { opacity: .8; }
+    .pslot--booked-pack { background: #ede9fe; color: var(--purple); cursor: pointer; transition: opacity .15s; }
+    .pslot--booked-pack:hover { opacity: .8; }
+    .pslot--unavailable { background: #F3F4F6; color: #D1D5DB; cursor: not-allowed; }
+
+    /* LEGEND */
+    .cal-legend { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 12px; }
+    .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+    .legend-dot { width: 12px; height: 12px; border-radius: 3px; }
+
+    /* PANEL DERECHO */
+    .side-panel { display: flex; flex-direction: column; gap: 16px; }
+
+    /* CITAS HOY */
+    .today-card { background: #fff; border: 1px solid var(--border); border-radius: var(--r-lg); padding: 20px; }
+    .today-card h3 { font-size: 16px; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+    .cita-item { border: 1px solid var(--border); border-radius: var(--r-md); padding: 12px; margin-bottom: 8px; transition: box-shadow .15s; }
+    .cita-item:hover { box-shadow: var(--sh-sm); }
+    .cita-item:last-child { margin-bottom: 0; }
+    .cita-item--single { border-left: 3px solid var(--accent); }
+    .cita-item--pack   { border-left: 3px solid var(--purple); }
+    .cita-time { font-size: 16px; font-weight: 700; color: var(--text); }
+    .cita-dur  { font-size: 12px; color: var(--muted); }
+    .cita-name { font-size: 14px; font-weight: 600; margin-top: 4px; }
+    .cita-phone { font-size: 13px; color: var(--muted); }
+    .cita-type { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: var(--r-xl); margin-top: 6px; }
+    .type--single { background: var(--primary); color: var(--accent-d); }
+    .type--pack   { background: #ede9fe; color: var(--purple); }
+    .no-citas { font-size: 13px; color: var(--muted); text-align: center; padding: 16px 0; }
+
+    /* INDISPONIBILIDAD */
+    .unavail-card { background: #fff; border: 1px solid var(--border); border-radius: var(--r-lg); padding: 20px; }
+    .unavail-card h3 { font-size: 16px; margin-bottom: 14px; }
+    .unavail-form { display: flex; flex-direction: column; gap: 10px; }
+    .unavail-form label { font-size: 12px; font-weight: 600; color: var(--muted); }
+    .unavail-form input, .unavail-form select {
+      width: 100%; padding: 9px 12px; border: 1.5px solid var(--border);
+      border-radius: var(--r-md); font-size: 13px; font-family: inherit;
+      outline: none; transition: border-color .2s;
+    }
+    .unavail-form input:focus, .unavail-form select:focus { border-color: var(--accent); }
+    .btn-add-unavail { background: var(--warning); color: #fff; font-size: 13px; font-weight: 600; padding: 10px; border-radius: var(--r-xl); width: 100%; margin-top: 4px; transition: opacity .2s; }
+    .btn-add-unavail:hover { opacity: .85; }
+    .unavail-list { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; }
+    .unavail-item { background: #fef9c3; border: 1px solid #fde68a; border-radius: var(--r-md); padding: 8px 12px; font-size: 12px; display: flex; justify-content: space-between; align-items: center; }
+    .unavail-item button { background: none; color: var(--danger); font-size: 14px; font-weight: 700; }
+
+    /* DETAIL MODAL */
+    .detail-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 200; align-items: center; justify-content: center; padding: 20px; }
+    .detail-overlay.open { display: flex; }
+    .detail-modal { background: #fff; border-radius: var(--r-xl); padding: 28px; max-width: 380px; width: 100%; box-shadow: 0 8px 32px rgba(0,0,0,.12); position: relative; animation: su .2s ease; }
+    @keyframes su { from { transform: translateY(14px); opacity: 0; } to { transform: none; opacity: 1; } }
+    .detail-modal h3 { font-size: 18px; margin-bottom: 14px; }
+    .detail-row { display: flex; justify-content: space-between; font-size: 14px; padding: 7px 0; border-bottom: 1px solid var(--border); }
+    .detail-row:last-of-type { border-bottom: none; }
+    .detail-row span:first-child { color: var(--muted); font-weight: 500; }
+    .detail-row span:last-child  { font-weight: 600; }
+    .detail-close { position: absolute; top: 12px; right: 12px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 50%; width: 28px; height: 28px; font-size: 14px; }
+    .detail-actions { display: flex; gap: 8px; margin-top: 16px; }
+    .btn-call { flex: 1; background: var(--success); color: #fff; font-size: 13px; font-weight: 600; padding: 10px; border-radius: var(--r-xl); transition: opacity .2s; }
+    .btn-call:hover { opacity: .85; }
+    .btn-cancel { flex: 1; background: #FEF2F2; color: var(--danger); border: 1px solid #FECACA; font-size: 13px; font-weight: 600; padding: 10px; border-radius: var(--r-xl); transition: background .2s; }
+    .btn-cancel:hover { background: #FECACA; }
+
+    /* TOAST */
+    .toast { position: fixed; bottom: 20px; right: 20px; z-index: 300; background: var(--text); color: #fff; padding: 11px 18px; border-radius: var(--r-md); font-size: 13px; font-weight: 500; box-shadow: var(--sh-md); transform: translateY(70px); transition: transform .3s; }
+    .toast.show { transform: none; }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════ LOGIN ═══════════ -->
+<div class="login-wrap" id="loginWrap">
+  <div class="login-card">
+    <div class="login-logo">Limpia<span>Hogar</span></div>
+    <p class="login-sub">Panel exclusivo para limpiadores</p>
+    <div class="login-field">
+      <label for="loginUser">Usuario</label>
+      <input type="text" id="loginUser" placeholder="limpiador1" autocomplete="username" />
+    </div>
+    <div class="login-field">
+      <label for="loginPass">Contraseña</label>
+      <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password" />
+    </div>
+    <button class="btn-login" onclick="doLogin()">Entrar</button>
+    <div class="login-error" id="loginError">Usuario o contraseña incorrectos.</div>
+    <p style="font-size:11px;color:var(--muted);margin-top:20px">Credenciales demo: <strong>limpiador1</strong> / <strong>limpiahogar2025</strong></p>
+  </div>
+</div>
+
+<!-- ═══════════ PANEL ═══════════ -->
+<div class="panel" id="panelWrap">
+
+  <div class="topbar">
+    <div class="topbar__logo">Limpia<span>Hogar</span> <span style="font-size:13px;font-weight:400;color:#9CA3AF;margin-left:6px">Panel limpiador</span></div>
+    <div class="topbar__right">
+      <span class="topbar__user" id="topbarUser"></span>
+      <button class="btn-logout" onclick="doLogout()">Cerrar sesión</button>
+    </div>
+  </div>
+
+  <div class="panel-main">
+
+    <div class="panel-header">
+      <h1>Mi agenda</h1>
+      <div class="today-badge" id="todayBadge"></div>
+    </div>
+
+    <!-- STATS -->
+    <div class="panel-stats">
+      <div class="pstat pstat--accent"><div class="pstat__num" id="statHoy">0</div><div class="pstat__label">Citas hoy</div></div>
+      <div class="pstat pstat--success"><div class="pstat__num" id="statSemana">0</div><div class="pstat__label">Esta semana</div></div>
+      <div class="pstat pstat--purple"><div class="pstat__num" id="statPacks">0</div><div class="pstat__label">Clientes con pack</div></div>
+      <div class="pstat"><div class="pstat__num" id="statHoras">0 h</div><div class="pstat__label">Horas esta semana</div></div>
+    </div>
+
+    <div class="panel-layout">
+
+      <!-- CALENDARIO -->
+      <div>
+        <div class="cal-header">
+          <h2 id="calLabel"></h2>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <div class="view-toggle">
+              <button class="view-btn active" id="btnWeek" onclick="setView('week')">Semana</button>
+              <button class="view-btn" id="btnDay" onclick="setView('day')">Día</button>
+            </div>
+            <button class="cal-nav-btn" id="pPrev">← Ant</button>
+            <button class="cal-nav-btn" id="pNext">Sig →</button>
+          </div>
+        </div>
+        <div id="calGrid"></div>
+        <div class="cal-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:var(--primary)"></div>Cita puntual</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#ede9fe"></div>Pack</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#fef9c3"></div>No disponible</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--surface-2)"></div>Libre</div>
+        </div>
+      </div>
+
+      <!-- LADO DERECHO -->
+      <div class="side-panel">
+
+        <!-- CITAS HOY -->
+        <div class="today-card">
+          <h3>📋 Citas de hoy</h3>
+          <div id="todayList"></div>
+        </div>
+
+        <!-- MARCAR INDISPONIBILIDAD -->
+        <div class="unavail-card">
+          <h3>⛔ Marcar no disponible</h3>
+          <div class="unavail-form">
+            <div>
+              <label>Fecha</label>
+              <input type="date" id="unavailDate" />
+            </div>
+            <div>
+              <label>Hora inicio</label>
+              <select id="unavailStart">
+                <option value="allday">Todo el día</option>
+              </select>
+            </div>
+            <div id="unavailEndWrap">
+              <label>Hora fin</label>
+              <select id="unavailEnd"></select>
+            </div>
+            <div>
+              <label>Motivo (opcional)</label>
+              <input type="text" id="unavailReason" placeholder="Vacaciones, cita médica..." />
+            </div>
+            <button class="btn-add-unavail" onclick="addUnavail()">Añadir indisponibilidad</button>
+          </div>
+          <div class="unavail-list" id="unavailList"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="detail-overlay" id="detailOverlay">
+  <div class="detail-modal">
+    <button class="detail-close" onclick="closeDetail()">✕</button>
+    <h3 id="detailTitle">Detalles de la cita</h3>
+    <div id="detailRows"></div>
+    <div class="detail-actions">
+      <button class="btn-call" id="detailCallBtn">📞 Llamar</button>
+      <button class="btn-cancel" onclick="cancelCita()">Cancelar cita</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ════════════════════════════════════════════
+   AUTH (demo — en producción usar backend real)
+════════════════════════════════════════════ */
+const USERS = { 'limpiador1': 'limpiahogar2025' };
+let currentUser = null;
+
+function doLogin() {
+  const u = document.getElementById('loginUser').value.trim();
+  const p = document.getElementById('loginPass').value;
+  if (USERS[u] && USERS[u] === p) {
+    currentUser = u;
+    document.getElementById('loginWrap').style.display = 'none';
+    document.getElementById('panelWrap').style.display = 'block';
+    document.getElementById('topbarUser').textContent = '👤 ' + u;
+    initPanel();
+  } else {
+    document.getElementById('loginError').style.display = 'block';
+  }
+}
+document.getElementById('loginPass').addEventListener('keydown', e => { if (e.key==='Enter') doLogin(); });
+function doLogout() {
+  currentUser = null;
+  document.getElementById('panelWrap').style.display = 'none';
+  document.getElementById('loginWrap').style.display = 'flex';
+  document.getElementById('loginUser').value='';
+  document.getElementById('loginPass').value='';
+  document.getElementById('loginError').style.display='none';
+}
+
+/* ════════════════════════════════════════════
+   DATA (compartida con index — en prod: API/BD)
+════════════════════════════════════════════ */
+// { "YYYY-MM-DD HH:MM": { dur, type, client, phone } }
+const reservations = {
+  [fmtD(dOff(0)) + ' 10:00']: { dur:2, type:'single', client:'Carmen R.', phone:'600111222' },
+  [fmtD(dOff(0)) + ' 14:00']: { dur:2, type:'pack',   client:'Javier M.', phone:'600333444' },
+  [fmtD(dOff(1)) + ' 09:00']: { dur:2, type:'pack',   client:'Lucía P.',  phone:'600555666' },
+  [fmtD(dOff(2)) + ' 11:00']: { dur:2, type:'single', client:'Ana G.',    phone:'600777888' },
+  [fmtD(dOff(3)) + ' 16:00']: { dur:2, type:'single', client:'Pedro F.',  phone:'600999000' },
+  [fmtD(dOff(5)) + ' 10:00']: { dur:2, type:'pack',   client:'Marta L.',  phone:'611000111' },
+};
+
+// { "YYYY-MM-DD": { allDay:bool, start?:string, end?:string, reason:string } }
+const unavailabilities = {};
+
+let pWeekOffset = 0;
+let pView = 'week'; // 'week' | 'day'
+let pDayOffset = 0;
+let selectedCita = null;
+
+const DAYS = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+const WORK_START = 8, WORK_END = 20;
+
+function fmtD(d) { return d.toISOString().split('T')[0]; }
+function dOff(n) { const d=new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()+n); return d; }
+function eur(n) { return n.toFixed(2).replace('.',',')+' €'; }
+
+/* ════════════════════════════════════════════
+   INIT
+════════════════════════════════════════════ */
+function initPanel() {
+  const now = new Date();
+  document.getElementById('todayBadge').textContent =
+    now.toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
+  // Populate time selects
+  const startSel = document.getElementById('unavailStart');
+  const endSel   = document.getElementById('unavailEnd');
+  for (let h=WORK_START; h<=WORK_END; h++) {
+    ['00','30'].forEach(m => {
+      if (h===WORK_END && m==='30') return;
+      const t=`${String(h).padStart(2,'0')}:${m}`;
+      startSel.appendChild(new Option(t,t));
+      endSel.appendChild(new Option(t,t));
+    });
+  }
+  // Default unavail date to today
+  document.getElementById('unavailDate').value = fmtD(new Date());
+  document.getElementById('unavailStart').addEventListener('change', toggleUnavailEnd);
+  toggleUnavailEnd();
+
+  updateStats();
+  renderTodayList();
+  renderCal();
+}
+
+function toggleUnavailEnd() {
+  const v = document.getElementById('unavailStart').value;
+  document.getElementById('unavailEndWrap').style.display = v==='allday' ? 'none' : 'block';
+}
+
+/* ════════════════════════════════════════════
+   STATS
+════════════════════════════════════════════ */
+function updateStats() {
+  const todayStr = fmtD(new Date());
+  const ws = weekStartDate(pWeekOffset);
+
+  let hoy=0, sem=0, packs=new Set(), horas=0;
+  for (const [key, r] of Object.entries(reservations)) {
+    const [ds] = key.split(' ');
+    if (ds === todayStr) hoy++;
+    const d = new Date(ds+'T00:00');
+    const wEnd = new Date(ws); wEnd.setDate(ws.getDate()+7);
+    if (d >= ws && d < wEnd) { sem++; horas += r.dur; }
+    if (r.type==='pack') packs.add(r.client);
+  }
+  document.getElementById('statHoy').textContent    = hoy;
+  document.getElementById('statSemana').textContent = sem;
+  document.getElementById('statPacks').textContent  = packs.size;
+  document.getElementById('statHoras').textContent  = horas+' h';
+}
+
+/* ════════════════════════════════════════════
+   CITAS HOY
+════════════════════════════════════════════ */
+function renderTodayList() {
+  const todayStr = fmtD(new Date());
+  const list = document.getElementById('todayList');
+  const citas = Object.entries(reservations)
+    .filter(([k])=>k.startsWith(todayStr))
+    .sort(([a],[b])=>a.localeCompare(b));
+
+  if (!citas.length) {
+    list.innerHTML = '<div class="no-citas">No hay citas para hoy 🎉</div>';
+    return;
+  }
+  list.innerHTML = citas.map(([key,r])=>{
+    const [,t] = key.split(' ');
+    return `
+      <div class="cita-item cita-item--${r.type}" onclick="openDetail('${key}')">
+        <div style="display:flex;justify-content:space-between;align-items:baseline">
+          <span class="cita-time">${t}</span>
+          <span class="cita-dur">${r.dur} h</span>
+        </div>
+        <div class="cita-name">${r.client}</div>
+        <div class="cita-phone">📞 ${r.phone}</div>
+        <span class="cita-type type--${r.type}">${r.type==='pack'?'Pack':'Puntual'}</span>
+      </div>
+    `;
+  }).join('');
+}
+
+/* ════════════════════════════════════════════
+   CALENDARIO
+════════════════════════════════════════════ */
+function weekStartDate(off=0) {
+  const t=new Date(); t.setHours(0,0,0,0);
+  const dow=t.getDay();
+  t.setDate(t.getDate()+(dow===0?-6:1-dow)+off*7);
+  return t;
+}
+
+function setView(v) {
+  pView=v;
+  document.getElementById('btnWeek').classList.toggle('active',v==='week');
+  document.getElementById('btnDay').classList.toggle('active',v==='day');
+  renderCal();
+}
+
+document.getElementById('pPrev').addEventListener('click',()=>{ pWeekOffset--; renderCal(); updateStats(); });
+document.getElementById('pNext').addEventListener('click',()=>{ pWeekOffset++; renderCal(); updateStats(); });
+
+function renderCal() {
+  if (pView==='week') renderWeek();
+  else renderDay();
+}
+
+function renderWeek() {
+  const ws = weekStartDate(pWeekOffset);
+  const we = new Date(ws); we.setDate(ws.getDate()+6);
+  const fmt = d=>d.toLocaleDateString('es-ES',{day:'numeric',month:'short'});
+  document.getElementById('calLabel').textContent=`${fmt(ws)} — ${fmt(we)}`;
+
+  const grid=document.getElementById('calGrid');
+  grid.className='week-grid'; grid.innerHTML='';
+  const today=new Date(); today.setHours(0,0,0,0);
+
+  for (let d=0;d<7;d++) {
+    const date=new Date(ws); date.setDate(ws.getDate()+d);
+    const dStr=fmtD(date);
+    const isToday=date.getTime()===today.getTime();
+
+    const col=document.createElement('div'); col.className='pcol';
+    const hdr=document.createElement('div'); hdr.className='pcol__head'; hdr.textContent=DAYS[d]; col.appendChild(hdr);
+
+    const hasEvts=Object.keys(reservations).some(k=>k.startsWith(dStr));
+    const dateDiv=document.createElement('div');
+    dateDiv.className='pcol__date'+(isToday?' today':'')+(hasEvts?' has-events':'');
+    dateDiv.textContent=date.getDate();
+    col.appendChild(dateDiv);
+
+    const unav=unavailabilities[dStr];
+
+    for (let h=WORK_START;h<WORK_END;h++) {
+      ['00','30'].forEach(m=>{
+        const t=`${String(h).padStart(2,'0')}:${m}`;
+        const key=`${dStr} ${t}`;
+        const r=reservations[key];
+        const slot=document.createElement('div');
+
+        if (unav && (unav.allDay || (t>=unav.start && t<unav.end))) {
+          slot.className='pslot pslot--unavailable'; slot.textContent='✖';
+        } else if (r) {
+          slot.className=`pslot pslot--booked-${r.type}`;
+          slot.textContent=t;
+          slot.title=`${r.client} · ${r.dur}h`;
+          slot.onclick=()=>openDetail(key);
+        } else {
+          slot.className='pslot pslot--free'; slot.textContent=t;
+        }
+        col.appendChild(slot);
+      });
+    }
+    grid.appendChild(col);
+  }
+}
+
+function renderDay() {
+  const ws=weekStartDate(pWeekOffset);
+  const date=new Date(ws); date.setDate(ws.getDate()+(pDayOffset%7));
+  const dStr=fmtD(date);
+  document.getElementById('calLabel').textContent=date.toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'});
+
+  const grid=document.getElementById('calGrid');
+  grid.style.display='block'; grid.innerHTML='';
+
+  const unav=unavailabilities[dStr];
+  for (let h=WORK_START;h<WORK_END;h++) {
+    ['00','30'].forEach(m=>{
+      const t=`${String(h).padStart(2,'0')}:${m}`;
+      const key=`${dStr} ${t}`;
+      const r=reservations[key];
+      const row=document.createElement('div');
+      row.style.cssText='display:flex;align-items:center;gap:12px;padding:6px 0;border-bottom:1px solid var(--border)';
+
+      const timeSpan=document.createElement('span');
+      timeSpan.style.cssText='font-size:13px;font-weight:600;color:var(--muted);width:44px;flex-shrink:0';
+      timeSpan.textContent=t;
+
+      const block=document.createElement('div');
+      block.style.cssText='flex:1;border-radius:8px;padding:8px 12px;font-size:13px';
+
+      if (unav && (unav.allDay || (t>=unav.start && t<unav.end))) {
+        block.style.background='#fef9c3'; block.style.color='#92400e';
+        block.textContent='⛔ No disponible' + (unav.reason ? ` — ${unav.reason}` : '');
+      } else if (r) {
+        block.style.background=r.type==='pack'?'#ede9fe':'var(--primary)';
+        block.style.color=r.type==='pack'?'var(--purple)':'var(--accent-d)';
+        block.style.cursor='pointer';
+        block.innerHTML=`<strong>${r.client}</strong> · ${r.dur}h · ${r.type==='pack'?'Pack':'Puntual'} · 📞${r.phone}`;
+        block.onclick=()=>openDetail(key);
+      } else {
+        block.style.background='var(--surface-2)'; block.style.color='var(--muted)';
+        block.textContent='Disponible';
+      }
+      row.appendChild(timeSpan); row.appendChild(block);
+      grid.appendChild(row);
+    });
+  }
+}
+
+/* ════════════════════════════════════════════
+   DETALLE CITA
+════════════════════════════════════════════ */
+function openDetail(key) {
+  const r=reservations[key];
+  if (!r) return;
+  selectedCita=key;
+  const [dStr,t]=key.split(' ');
+  const date=new Date(dStr+'T00:00');
+  const dl=date.toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'});
+
+  document.getElementById('detailTitle').textContent=`Cita — ${r.client}`;
+  document.getElementById('detailRows').innerHTML=`
+    <div class="detail-row"><span>Fecha</span><span>${dl}</span></div>
+    <div class="detail-row"><span>Hora</span><span>${t}</span></div>
+    <div class="detail-row"><span>Duración</span><span>${r.dur} h</span></div>
+    <div class="detail-row"><span>Cliente</span><span>${r.client}</span></div>
+    <div class="detail-row"><span>Teléfono</span><span>${r.phone}</span></div>
+    <div class="detail-row"><span>Tipo</span><span>${r.type==='pack'?'Pack':'Puntual'}</span></div>
+    <div class="detail-row"><span>Importe</span><span>${eur(r.dur*(r.type==='pack'?12:15))}</span></div>
+  `;
+  document.getElementById('detailCallBtn').onclick=()=>{ window.location='tel:'+r.phone; };
+  document.getElementById('detailOverlay').classList.add('open');
+}
+
+function cancelCita() {
+  if (!selectedCita) return;
+  if (confirm(`¿Confirmar cancelación de la cita de ${reservations[selectedCita].client}?`)) {
+    delete reservations[selectedCita];
+    closeDetail();
+    renderCal(); updateStats(); renderTodayList();
+    showToast('Cita cancelada.');
+  }
+}
+
+function closeDetail() { document.getElementById('detailOverlay').classList.remove('open'); selectedCita=null; }
+document.getElementById('detailOverlay').addEventListener('click',e=>{ if(e.target===document.getElementById('detailOverlay')) closeDetail(); });
+
+/* ════════════════════════════════════════════
+   INDISPONIBILIDADES
+════════════════════════════════════════════ */
+function addUnavail() {
+  const date   = document.getElementById('unavailDate').value;
+  const start  = document.getElementById('unavailStart').value;
+  const end    = document.getElementById('unavailEnd').value;
+  const reason = document.getElementById('unavailReason').value.trim();
+  if (!date) { showToast('Selecciona una fecha.'); return; }
+  if (start!=='allday' && end<=start) { showToast('La hora de fin debe ser posterior al inicio.'); return; }
+
+  unavailabilities[date] = start==='allday'
+    ? { allDay:true, reason }
+    : { allDay:false, start, end, reason };
+
+  renderUnavailList();
+  renderCal();
+  showToast('Indisponibilidad añadida.');
+}
+
+function removeUnavail(date) {
+  delete unavailabilities[date];
+  renderUnavailList(); renderCal();
+  showToast('Indisponibilidad eliminada.');
+}
+
+function renderUnavailList() {
+  const list=document.getElementById('unavailList');
+  const items=Object.entries(unavailabilities);
+  if (!items.length) { list.innerHTML=''; return; }
+  list.innerHTML=items.map(([d,u])=>{
+    const dl=new Date(d+'T00:00').toLocaleDateString('es-ES',{day:'numeric',month:'short'});
+    const range=u.allDay?'Todo el día':`${u.start}–${u.end}`;
+    return `<div class="unavail-item">
+      <span><strong>${dl}</strong> · ${range}${u.reason?' · '+u.reason:''}</span>
+      <button onclick="removeUnavail('${d}')">✕</button>
+    </div>`;
+  }).join('');
+}
+
+/* ════════════════════════════════════════════
+   UTILS
+════════════════════════════════════════════ */
+function showToast(msg) {
+  const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+</script>
+</body>
+</html>

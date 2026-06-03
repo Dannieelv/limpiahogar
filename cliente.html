@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mi área — LimpiaHogar</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Display:wght@600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --accent:    #e07a85;
+      --accent-d:  #c4555f;
+      --success:   #16A34A;
+      --warning:   #D97706;
+      --danger:    #DC2626;
+      --purple:    #5b21b6;
+      --surface:   #FFFFFF;
+      --surface-2: #fafafa;
+      --text:      #111827;
+      --muted:     #6B7280;
+      --border:    #E5E7EB;
+      --primary:   #F2D9DC;
+      --secondary: #D9F2D8;
+      --r-sm:8px; --r-md:16px; --r-lg:24px; --r-xl:32px;
+      --sh-sm:0 1px 4px rgba(0,0,0,.06);
+      --sh-md:0 4px 16px rgba(0,0,0,.10);
+      --sh-lg:0 8px 32px rgba(0,0,0,.12);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', sans-serif; color: var(--text); background: var(--surface-2); line-height: 1.6; min-height: 100vh; }
+    h1,h2,h3 { font-family: 'Noto Serif Display', serif; font-weight: 700; }
+    button { cursor: pointer; font-family: inherit; border: none; }
+    a { color: inherit; text-decoration: none; }
+
+    /* ── LOGIN ───────────────────────────────────────────── */
+    #loginScreen {
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, var(--primary), #fff 60%, var(--secondary));
+      padding: 24px;
+    }
+    .login-card {
+      background: #fff; border-radius: var(--r-xl); padding: 44px 40px;
+      max-width: 400px; width: 100%; box-shadow: var(--sh-lg);
+    }
+    .login-logo { font-family: 'Noto Serif Display', serif; font-size: 26px; font-weight: 700; color: var(--accent-d); margin-bottom: 4px; }
+    .login-logo span { color: var(--text); }
+    .login-sub { font-size: 14px; color: var(--muted); margin-bottom: 32px; }
+    .login-field { margin-bottom: 18px; }
+    .login-field label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+    .login-field input {
+      width: 100%; padding: 12px 14px; border: 1.5px solid var(--border);
+      border-radius: var(--r-md); font-size: 15px; font-family: inherit;
+      outline: none; transition: border-color .2s; letter-spacing: .05em;
+    }
+    .login-field input:focus { border-color: var(--accent); }
+    .btn-login {
+      width: 100%; background: var(--accent); color: #fff; font-size: 15px; font-weight: 600;
+      padding: 14px; border-radius: var(--r-xl); margin-top: 4px;
+      box-shadow: 0 4px 14px rgba(224,122,133,.3); transition: background .2s, transform .15s;
+    }
+    .btn-login:hover { background: var(--accent-d); transform: translateY(-1px); }
+    .login-note { font-size: 12px; color: var(--muted); margin-top: 16px; text-align: center; line-height: 1.6; }
+    .login-note a { color: var(--accent-d); text-decoration: underline; }
+    .login-error { font-size: 13px; color: var(--danger); margin-top: 12px; text-align: center; display: none; }
+
+    /* ── TOPBAR ─────────────────────────────────────────── */
+    .topbar {
+      background: #fff; border-bottom: 1px solid var(--border);
+      padding: 0 24px; display: flex; align-items: center; justify-content: space-between;
+      height: 60px; position: sticky; top: 0; z-index: 50;
+    }
+    .topbar__logo { font-family: 'Noto Serif Display', serif; font-size: 20px; font-weight: 700; color: var(--accent-d); }
+    .topbar__logo span { color: var(--text); }
+    .topbar__right { display: flex; align-items: center; gap: 12px; }
+    .topbar__user { font-size: 13px; color: var(--muted); }
+    .btn-logout { background: var(--surface-2); border: 1px solid var(--border); color: var(--muted); font-size: 12px; font-weight: 600; padding: 7px 14px; border-radius: var(--r-xl); transition: background .15s; }
+    .btn-logout:hover { background: var(--primary); }
+    .btn-new-cita { background: var(--accent); color: #fff; font-size: 13px; font-weight: 600; padding: 8px 16px; border-radius: var(--r-xl); transition: background .2s; }
+    .btn-new-cita:hover { background: var(--accent-d); }
+
+    /* ── MAIN ───────────────────────────────────────────── */
+    #clientPanel { display: none; }
+    .main { max-width: 900px; margin: 0 auto; padding: 32px 24px 80px; }
+
+    /* GREETING */
+    .greeting { margin-bottom: 32px; }
+    .greeting h1 { font-size: 28px; margin-bottom: 6px; }
+    .greeting p { font-size: 15px; color: var(--muted); }
+
+    /* TABS */
+    .tabs { display: flex; gap: 4px; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--r-md); padding: 4px; margin-bottom: 28px; width: fit-content; }
+    .tab { padding: 8px 20px; border-radius: var(--r-sm); font-size: 14px; font-weight: 600; color: var(--muted); background: transparent; transition: all .15s; }
+    .tab.active { background: #fff; color: var(--text); box-shadow: var(--sh-sm); }
+
+    /* ESTADO PACK */
+    .pack-status {
+      background: linear-gradient(135deg, #f5f3ff, #ede9fe);
+      border: 2px solid #c4b5fd; border-radius: var(--r-lg); padding: 24px;
+      margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: gap;
+      gap: 16px;
+    }
+    .pack-status.no-pack { background: var(--surface-2); border-color: var(--border); }
+    .pack-status__info h3 { font-size: 16px; color: var(--purple); margin-bottom: 4px; }
+    .pack-status.no-pack .pack-status__info h3 { color: var(--muted); }
+    .pack-status__info p { font-size: 13px; color: var(--muted); }
+    .pack-pill { font-size: 12px; font-weight: 700; padding: 5px 14px; border-radius: var(--r-xl); }
+    .pill--active  { background: var(--secondary); color: var(--success); }
+    .pill--inactive{ background: var(--surface-2); color: var(--muted); border: 1px solid var(--border); }
+    .btn-contratar { background: var(--purple); color: #fff; font-size: 13px; font-weight: 600; padding: 10px 18px; border-radius: var(--r-xl); transition: background .2s; }
+    .btn-contratar:hover { background: #4c1d95; }
+
+    /* TARJETA CITA */
+    .citas-list { display: flex; flex-direction: column; gap: 12px; }
+    .cita-card {
+      background: #fff; border: 1px solid var(--border); border-radius: var(--r-lg); padding: 20px;
+      display: grid; grid-template-columns: auto 1fr auto; gap: 16px; align-items: center;
+      transition: box-shadow .2s; cursor: default;
+    }
+    .cita-card:hover { box-shadow: var(--sh-md); }
+    .cita-card--pack { border-left: 4px solid var(--purple); }
+    .cita-card--single { border-left: 4px solid var(--accent); }
+    .cita-card--past { opacity: .55; }
+
+    .cita-date-col { text-align: center; min-width: 56px; }
+    .cita-day  { font-size: 28px; font-weight: 700; font-family: 'Noto Serif Display', serif; color: var(--accent-d); line-height: 1; }
+    .cita-month{ font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+    .cita-year { font-size: 11px; color: var(--muted); }
+
+    .cita-info h4 { font-size: 15px; font-weight: 600; margin-bottom: 3px; }
+    .cita-info .meta { font-size: 13px; color: var(--muted); display: flex; gap: 12px; flex-wrap: wrap; }
+    .cita-badge { display: inline-block; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: var(--r-xl); margin-top: 6px; }
+    .badge--single { background: var(--primary); color: var(--accent-d); }
+    .badge--pack   { background: #ede9fe; color: var(--purple); }
+    .badge--past   { background: var(--surface-2); color: var(--muted); border: 1px solid var(--border); }
+
+    .cita-actions { display: flex; flex-direction: column; gap: 6px; }
+    .btn-cancel-cita { font-size: 12px; font-weight: 600; color: var(--danger); background: #FEF2F2; border: 1px solid #FECACA; padding: 8px 12px; border-radius: var(--r-md); transition: background .15s; }
+    .btn-cancel-cita:hover { background: #FECACA; }
+    .btn-mod-cita { font-size: 12px; font-weight: 600; color: var(--muted); background: var(--surface-2); border: 1px solid var(--border); padding: 8px 12px; border-radius: var(--r-md); transition: background .15s; }
+    .btn-mod-cita:hover { background: var(--primary); }
+
+    .empty-state { text-align: center; padding: 60px 24px; color: var(--muted); }
+    .empty-state .icon { font-size: 48px; margin-bottom: 16px; }
+    .empty-state h3 { font-size: 18px; color: var(--text); margin-bottom: 8px; }
+    .empty-state p { font-size: 14px; }
+
+    /* HISTORIAL */
+    .section-label { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin: 28px 0 12px; }
+
+    /* DATOS */
+    .datos-card { background: #fff; border: 1px solid var(--border); border-radius: var(--r-lg); padding: 28px; }
+    .datos-card h3 { font-size: 16px; margin-bottom: 20px; }
+    .dato-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
+    .dato-row:last-child { border-bottom: none; }
+    .dato-label { color: var(--muted); font-weight: 500; }
+    .dato-value { font-weight: 600; }
+    .rgpd-box { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--r-md); padding: 16px; margin-top: 20px; font-size: 13px; color: var(--muted); line-height: 1.7; }
+    .rgpd-box a { color: var(--accent-d); text-decoration: underline; }
+    .btn-delete { background: #FEF2F2; color: var(--danger); border: 1px solid #FECACA; font-size: 13px; font-weight: 600; padding: 10px 18px; border-radius: var(--r-xl); margin-top: 16px; transition: background .15s; }
+    .btn-delete:hover { background: #FECACA; }
+
+    /* MODAL CANCELAR */
+    .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 200; align-items: center; justify-content: center; padding: 20px; }
+    .overlay.open { display: flex; }
+    .modal { background: #fff; border-radius: var(--r-xl); padding: 32px; max-width: 420px; width: 100%; box-shadow: var(--sh-lg); position: relative; animation: su .2s ease; }
+    @keyframes su { from { transform: translateY(14px); opacity: 0; } to { transform: none; opacity: 1; } }
+    .modal-close { position: absolute; top: 12px; right: 12px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 50%; width: 28px; height: 28px; font-size: 14px; }
+    .modal h3 { font-size: 20px; margin-bottom: 8px; }
+    .modal p  { font-size: 14px; color: var(--muted); line-height: 1.6; margin-bottom: 20px; }
+    .modal-actions { display: flex; gap: 10px; }
+    .btn-confirm-cancel { flex: 1; background: var(--danger); color: #fff; font-size: 14px; font-weight: 600; padding: 12px; border-radius: var(--r-xl); transition: opacity .2s; }
+    .btn-confirm-cancel:hover { opacity: .85; }
+    .btn-back { flex: 1; background: var(--surface-2); border: 1px solid var(--border); color: var(--text); font-size: 14px; font-weight: 600; padding: 12px; border-radius: var(--r-xl); }
+
+    /* TOAST */
+    .toast { position: fixed; bottom: 20px; right: 20px; z-index: 300; background: var(--text); color: #fff; padding: 12px 20px; border-radius: var(--r-md); font-size: 14px; font-weight: 500; box-shadow: var(--sh-lg); transform: translateY(70px); transition: transform .3s; }
+    .toast.show { transform: none; }
+
+    /* ACCESO LIMPIADOR (discreto, en el footer) */
+    .cleaner-link { position: fixed; bottom: 16px; left: 16px; z-index: 40; }
+    .cleaner-link a { display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,.85); border: 1px solid var(--border); border-radius: var(--r-xl); padding: 7px 14px; font-size: 11px; font-weight: 600; color: var(--muted); backdrop-filter: blur(6px); box-shadow: var(--sh-sm); transition: background .15s; text-decoration: none; }
+    .cleaner-link a:hover { background: #fff; color: var(--text); }
+
+    @media (max-width: 600px) {
+      .cita-card { grid-template-columns: auto 1fr; }
+      .cita-actions { grid-column: 1/-1; flex-direction: row; }
+      .login-card { padding: 32px 24px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════ LOGIN ══════════════════ -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo">Limpia<span>Hogar</span></div>
+    <p class="login-sub">Accede a tus citas y gestiona tu servicio</p>
+
+    <div class="login-field">
+      <label for="loginPhone">Tu número de teléfono</label>
+      <input type="tel" id="loginPhone" placeholder="600 000 000" autocomplete="tel"
+             inputmode="tel" maxlength="12" />
+    </div>
+
+    <button class="btn-login" onclick="doLogin()">Entrar a mi área →</button>
+
+    <div class="login-error" id="loginError">
+      No encontramos ninguna reserva con ese teléfono.
+    </div>
+
+    <p class="login-note">
+      Usamos tu teléfono únicamente para identificarte.<br>
+      ¿Primera vez? <a href="index.html#reservar">Reserva tu primera cita</a> y después accede aquí.
+    </p>
+  </div>
+</div>
+
+<!-- ══════════════════ PANEL CLIENTE ══════════════════ -->
+<div id="clientPanel">
+
+  <nav class="topbar">
+    <a href="index.html" class="topbar__logo">Limpia<span>Hogar</span></a>
+    <div class="topbar__right">
+      <span class="topbar__user" id="topbarUser"></span>
+      <a href="index.html#reservar" class="btn-new-cita">+ Nueva cita</a>
+      <button class="btn-logout" onclick="doLogout()">Salir</button>
+    </div>
+  </nav>
+
+  <div class="main">
+
+    <!-- GREETING -->
+    <div class="greeting">
+      <h1 id="greetingName">Hola 👋</h1>
+      <p id="greetingPhone"></p>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab active" id="tabCitas"    onclick="showTab('citas')">Mis citas</button>
+      <button class="tab"        id="tabPack"     onclick="showTab('pack')">Mi pack</button>
+      <button class="tab"        id="tabDatos"    onclick="showTab('datos')">Mis datos</button>
+    </div>
+
+    <!-- ── TAB: CITAS ── -->
+    <div id="tabContentCitas">
+
+      <!-- PRÓXIMAS -->
+      <div class="section-label">Próximas citas</div>
+      <div class="citas-list" id="proximas"></div>
+
+      <!-- HISTORIAL -->
+      <div class="section-label" style="margin-top:36px">Historial</div>
+      <div class="citas-list" id="historial"></div>
+
+    </div>
+
+    <!-- ── TAB: PACK ── -->
+    <div id="tabContentPack" style="display:none">
+      <div id="packStatusCard"></div>
+      <div id="packCitas" style="margin-top:8px"></div>
+    </div>
+
+    <!-- ── TAB: DATOS ── -->
+    <div id="tabContentDatos" style="display:none">
+      <div class="datos-card">
+        <h3>Tus datos de contacto</h3>
+        <div class="dato-row"><span class="dato-label">Nombre</span><span class="dato-value" id="datosNombre">—</span></div>
+        <div class="dato-row"><span class="dato-label">Teléfono</span><span class="dato-value" id="datosTelefono">—</span></div>
+        <div class="dato-row"><span class="dato-label">Zona de servicio</span><span class="dato-value">Colmenar Viejo · Tres Cantos · Norte de Madrid</span></div>
+
+        <div class="rgpd-box">
+          <strong>Protección de datos (RGPD)</strong><br>
+          Solo almacenamos tu nombre y teléfono para gestionar tus reservas. No compartimos tus datos con terceros ni los usamos con fines comerciales. Puedes solicitar la eliminación de tus datos en cualquier momento.<br><br>
+          Consulta nuestra <a href="index.html#privacidad">política de privacidad completa</a>.
+        </div>
+
+        <button class="btn-delete" onclick="requestDelete()">
+          Solicitar eliminación de mis datos
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ACCESO LIMPIADOR (discreto) -->
+<div class="cleaner-link" id="cleanerLink" style="display:none">
+  <a href="panel.html" title="Área de limpiadores">🧹 Acceso limpiador</a>
+</div>
+
+<!-- MODAL CANCELAR -->
+<div class="overlay" id="cancelOverlay">
+  <div class="modal">
+    <button class="modal-close" onclick="closeOverlay()">✕</button>
+    <h3>Cancelar cita</h3>
+    <p id="cancelMsg"></p>
+    <div class="modal-actions">
+      <button class="btn-back" onclick="closeOverlay()">Volver</button>
+      <button class="btn-confirm-cancel" onclick="confirmCancel()">Sí, cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ════════════════════════════════════════════
+   DATOS (demo — en producción: API + BD)
+   Reservas indexadas por teléfono del cliente
+════════════════════════════════════════════ */
+const CLIENTS = {
+  '600111222': { name: 'Carmen R.',  pack: null },
+  '600333444': { name: 'Javier M.',  pack: { name:'Pack Hogar', hours:3, monthly:144, status:'active', nextPayment:'2025-07-01' } },
+  '600555666': { name: 'Lucía P.',   pack: { name:'Pack Básico', hours:2, monthly:96, status:'active', nextPayment:'2025-07-01' } },
+  '600777888': { name: 'Ana G.',     pack: null },
+  '600999000': { name: 'Pedro F.',   pack: null },
+  '611000111': { name: 'Marta L.',   pack: { name:'Pack Premium', hours:4, monthly:192, status:'active', nextPayment:'2025-07-01' } },
+  // Demo genérico para pruebas
+  '123456789': { name: 'Cliente Demo', pack: { name:'Pack Hogar', hours:3, monthly:144, status:'active', nextPayment:'2025-07-01' } },
+  '600000000': { name: 'Test Usuario', pack: { name:'Pack Hogar', hours:3, monthly:144, status:'active', nextPayment:'2025-07-01' } },
+};
+
+// Reservas por teléfono { phone: [ {key, dur, type, ...} ] }
+const RESERVATIONS_BY_PHONE = {
+  '600111222': [
+    { key: dateKey(0)+' 10:00', dur:2, type:'single' },
+    { key: dateKey(-14)+' 11:00', dur:2, type:'single' },
+  ],
+  '600333444': [
+    { key: dateKey(1)+' 09:00', dur:2, type:'pack' },
+    { key: dateKey(8)+' 09:00', dur:2, type:'pack' },
+    { key: dateKey(-7)+' 09:00', dur:2, type:'pack' },
+  ],
+  '600555666': [
+    { key: dateKey(2)+' 11:00', dur:2, type:'pack' },
+    { key: dateKey(-7)+' 11:00', dur:2, type:'pack' },
+  ],
+  '600777888': [
+    { key: dateKey(3)+' 16:00', dur:2, type:'single' },
+  ],
+  '600999000': [
+    { key: dateKey(5)+' 10:00', dur:2, type:'single' },
+    { key: dateKey(-3)+' 14:00', dur:2, type:'single' },
+  ],
+  '611000111': [
+    { key: dateKey(5)+' 10:00', dur:2, type:'pack' },
+  ],
+  '600000000': [
+    { key: dateKey(2)+' 10:00', dur:2, type:'pack' },
+    { key: dateKey(9)+' 10:00', dur:2, type:'pack' },
+    { key: dateKey(-5)+' 10:00', dur:2, type:'pack' },
+    { key: dateKey(4)+' 16:00', dur:2, type:'single' },
+  ],
+  '123456789': [
+    { key: dateKey(2)+' 10:00', dur:2, type:'pack' },
+    { key: dateKey(9)+' 10:00', dur:2, type:'pack' },
+    { key: dateKey(-5)+' 10:00', dur:2, type:'pack' },
+    { key: dateKey(4)+' 16:00', dur:2, type:'single' },
+  ],
+};
+
+let currentPhone = null;
+let cancelTarget  = null;
+
+/* ════════════════════════════════════════════
+   UTILIDADES
+════════════════════════════════════════════ */
+function dateKey(offsetDays) {
+  const d = new Date(); d.setHours(0,0,0,0);
+  d.setDate(d.getDate() + offsetDays);
+  return d.toISOString().split('T')[0];
+}
+function eur(n) { return n.toFixed(2).replace('.',',')+' €'; }
+function isFuture(key) {
+  const [ds,t] = key.split(' ');
+  const dt = new Date(ds+'T'+t);
+  return dt > new Date();
+}
+function fmtKey(key) {
+  const [ds,t] = key.split(' ');
+  const d = new Date(ds+'T00:00');
+  return {
+    day:   d.getDate(),
+    month: d.toLocaleDateString('es-ES',{month:'short'}),
+    year:  d.getFullYear(),
+    weekday: d.toLocaleDateString('es-ES',{weekday:'long'}),
+    full:  d.toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'}),
+    time:  t,
+  };
+}
+function hoursUntil(key) {
+  const [ds,t] = key.split(' ');
+  const dt = new Date(ds+'T'+t);
+  return (dt - new Date()) / 3600000;
+}
+
+/* ════════════════════════════════════════════
+   AUTH
+════════════════════════════════════════════ */
+function normalizePhone(v) { return v.replace(/\s+/g,'').replace(/^(\+34)/,''); }
+
+function doLogin() {
+  const raw = document.getElementById('loginPhone').value;
+  const phone = normalizePhone(raw);
+  if (!CLIENTS[phone]) {
+    document.getElementById('loginError').style.display = 'block';
+    return;
+  }
+  currentPhone = phone;
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('clientPanel').style.display  = 'block';
+  document.getElementById('cleanerLink').style.display  = 'block';
+  initPanel();
+}
+
+document.getElementById('loginPhone').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+
+function doLogout() {
+  currentPhone = null;
+  document.getElementById('clientPanel').style.display  = 'none';
+  document.getElementById('cleanerLink').style.display  = 'none';
+  document.getElementById('loginScreen').style.display  = 'flex';
+  document.getElementById('loginPhone').value = '';
+  document.getElementById('loginError').style.display = 'none';
+}
+
+/* ════════════════════════════════════════════
+   INIT PANEL
+════════════════════════════════════════════ */
+function initPanel() {
+  const client = CLIENTS[currentPhone];
+  document.getElementById('greetingName').textContent   = `Hola, ${client.name.split(' ')[0]} 👋`;
+  document.getElementById('greetingPhone').textContent  = `Número: ${currentPhone}`;
+  document.getElementById('topbarUser').textContent     = client.name;
+  document.getElementById('datosNombre').textContent    = client.name;
+  document.getElementById('datosTelefono').textContent  = currentPhone;
+
+  renderCitas();
+  renderPack();
+}
+
+/* ════════════════════════════════════════════
+   TABS
+════════════════════════════════════════════ */
+function showTab(name) {
+  ['citas','pack','datos'].forEach(t => {
+    document.getElementById('tabContent'+cap(t)).style.display = t===name ? 'block' : 'none';
+    document.getElementById('tab'+cap(t)).classList.toggle('active', t===name);
+  });
+}
+function cap(s) { return s[0].toUpperCase()+s.slice(1); }
+
+/* ════════════════════════════════════════════
+   RENDER CITAS
+════════════════════════════════════════════ */
+function renderCitas() {
+  const reservations = RESERVATIONS_BY_PHONE[currentPhone] || [];
+  const now = new Date();
+
+  const upcoming = reservations.filter(r => isFuture(r.key))
+    .sort((a,b)=>a.key.localeCompare(b.key));
+  const past = reservations.filter(r => !isFuture(r.key))
+    .sort((a,b)=>b.key.localeCompare(a.key));
+
+  document.getElementById('proximas').innerHTML = upcoming.length
+    ? upcoming.map(r=>citaCardHTML(r, false)).join('')
+    : '<div class="empty-state"><div class="icon">📅</div><h3>Sin citas próximas</h3><p>Reserva tu próxima cita desde la web.</p><br><a href="index.html#reservar" style="color:var(--accent-d);font-weight:600">Reservar ahora →</a></div>';
+
+  document.getElementById('historial').innerHTML = past.length
+    ? past.map(r=>citaCardHTML(r, true)).join('')
+    : '<p style="font-size:13px;color:var(--muted)">Sin citas anteriores.</p>';
+}
+
+function citaCardHTML(r, isPast) {
+  const f = fmtKey(r.key);
+  const rate  = r.type==='pack' ? 12 : 15;
+  const total = r.dur * rate;
+  const canCancel = !isPast && hoursUntil(r.key) > 24;
+  const cancelNote = !isPast && !canCancel ? '<span style="font-size:11px;color:var(--warning)">⚠ Menos de 24h</span>' : '';
+
+  return `
+    <div class="cita-card cita-card--${r.type}${isPast?' cita-card--past':''}">
+      <div class="cita-date-col">
+        <div class="cita-day">${f.day}</div>
+        <div class="cita-month">${f.month}</div>
+        <div class="cita-year">${f.year}</div>
+      </div>
+      <div class="cita-info">
+        <h4>${f.weekday.charAt(0).toUpperCase()+f.weekday.slice(1)} · ${f.time}</h4>
+        <div class="meta">
+          <span>⏱ ${r.dur} horas</span>
+          <span>💶 ${eur(total)}</span>
+        </div>
+        <span class="cita-badge badge--${isPast?'past':r.type}">${isPast?'Realizada':r.type==='pack'?'Pack':'Puntual'}</span>
+      </div>
+      ${!isPast ? `<div class="cita-actions">
+        ${canCancel ? `<button class="btn-cancel-cita" onclick="askCancel('${r.key}')">Cancelar</button>` : cancelNote}
+        ${canCancel ? `<button class="btn-mod-cita" onclick="askModify('${r.key}')">Cambiar</button>` : ''}
+      </div>` : ''}
+    </div>
+  `;
+}
+
+/* ════════════════════════════════════════════
+   CANCELAR CITA
+════════════════════════════════════════════ */
+function askCancel(key) {
+  cancelTarget = key;
+  const f = fmtKey(key);
+  document.getElementById('cancelMsg').textContent =
+    `¿Seguro que quieres cancelar la cita del ${f.full} a las ${f.time}? Esta acción no se puede deshacer.`;
+  document.getElementById('cancelOverlay').classList.add('open');
+}
+
+function confirmCancel() {
+  if (!cancelTarget) return;
+  const arr = RESERVATIONS_BY_PHONE[currentPhone];
+  const idx = arr.findIndex(r=>r.key===cancelTarget);
+  if (idx>-1) arr.splice(idx,1);
+  closeOverlay();
+  renderCitas(); renderPack();
+  showToast('Cita cancelada. Te contactaremos si es necesario.');
+  cancelTarget=null;
+}
+
+function askModify(key) {
+  closeOverlay();
+  showToast('Para modificar la cita, llámanos al 600 000 000 o resérvala de nuevo.');
+}
+
+function closeOverlay() { document.getElementById('cancelOverlay').classList.remove('open'); }
+document.getElementById('cancelOverlay').addEventListener('click',e=>{ if(e.target.id==='cancelOverlay') closeOverlay(); });
+
+/* ════════════════════════════════════════════
+   PACK
+════════════════════════════════════════════ */
+function renderPack() {
+  const client = CLIENTS[currentPhone];
+  const pack   = client.pack;
+  const card   = document.getElementById('packStatusCard');
+
+  if (pack && pack.status==='active') {
+    card.innerHTML = `
+      <div class="pack-status">
+        <div class="pack-status__info">
+          <h3>📦 ${pack.name}</h3>
+          <p>${pack.hours} horas/sesión · 12 €/h · ${eur(pack.monthly)}/mes</p>
+          <p style="margin-top:4px;font-size:12px">Próximo cargo: ${pack.nextPayment}</p>
+        </div>
+        <span class="pack-pill pill--active">Activo</span>
+      </div>
+    `;
+
+    const packRes = (RESERVATIONS_BY_PHONE[currentPhone]||[]).filter(r=>r.type==='pack');
+    const upcoming = packRes.filter(r=>isFuture(r.key)).sort((a,b)=>a.key.localeCompare(b.key));
+    document.getElementById('packCitas').innerHTML = upcoming.length
+      ? `<div class="section-label">Próximas sesiones del pack</div><div class="citas-list">${upcoming.map(r=>citaCardHTML(r,false)).join('')}</div>`
+      : '<p style="font-size:13px;color:var(--muted);margin-top:16px">No hay sesiones de pack programadas. <a href="index.html#packs" style="color:var(--accent-d)">Reservar sesiones →</a></p>';
+  } else {
+    card.innerHTML = `
+      <div class="pack-status no-pack">
+        <div class="pack-status__info">
+          <h3>Sin pack activo</h3>
+          <p>Ahorra un 20% con un pack de limpieza periódico a 12 €/hora.</p>
+        </div>
+        <a href="index.html#packs" class="btn-contratar">Ver packs →</a>
+      </div>
+    `;
+    document.getElementById('packCitas').innerHTML = '';
+  }
+}
+
+/* ════════════════════════════════════════════
+   DATOS
+════════════════════════════════════════════ */
+function requestDelete() {
+  if (confirm('¿Solicitar la eliminación de todos tus datos? Recibirás confirmación por teléfono.')) {
+    showToast('Solicitud enviada. Te contactaremos en 48h para confirmar la eliminación.');
+  }
+}
+
+/* ════════════════════════════════════════════
+   TOAST
+════════════════════════════════════════════ */
+function showToast(msg) {
+  const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3500);
+}
+</script>
+</body>
+</html>

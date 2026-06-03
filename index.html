@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LimpiaHogar — Servicio de Limpieza a Domicilio · Norte de Madrid</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Display:wght@300;400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    /* ── TOKENS ─────────────────────────────────────────── */
+    :root {
+      --primary:    #F2D9DC;
+      --primary-d:  #e8b8be;
+      --secondary:  #D9F2D8;
+      --secondary-d:#b4e0b2;
+      --accent:     #e07a85;
+      --accent-d:   #c4555f;
+      --success:    #16A34A;
+      --warning:    #D97706;
+      --danger:     #DC2626;
+      --surface:    #FFFFFF;
+      --surface-2:  #fafafa;
+      --text:       #111827;
+      --text-muted: #6B7280;
+      --border:     #E5E7EB;
+      --r-sm: 8px; --r-md: 16px; --r-lg: 24px; --r-xl: 32px;
+      --sh-sm: 0 1px 4px rgba(0,0,0,.06);
+      --sh-md: 0 4px 16px rgba(0,0,0,.10);
+      --sh-lg: 0 8px 32px rgba(0,0,0,.12);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', sans-serif; color: var(--text); background: var(--surface); line-height: 1.6; }
+    h1,h2,h3,h4 { font-family: 'Noto Serif Display', serif; font-weight: 600; line-height: 1.2; }
+    a { color: inherit; text-decoration: none; }
+    button { cursor: pointer; font-family: inherit; border: none; }
+
+    /* ── NAV ─────────────────────────────────────────────── */
+    .nav { position: sticky; top: 0; z-index: 100; background: rgba(255,255,255,.93); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border); padding: 0 24px; }
+    .nav__inner { max-width: 1100px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; height: 64px; }
+    .nav__logo { font-family: 'Noto Serif Display', serif; font-size: 22px; font-weight: 700; color: var(--accent-d); }
+    .nav__logo span { color: var(--text); }
+    .nav__links { display: flex; gap: 28px; }
+    .nav__links a { font-size: 14px; font-weight: 500; color: var(--text-muted); transition: color .2s; }
+    .nav__links a:hover { color: var(--accent-d); }
+    .nav__cta { background: var(--accent); color: #fff; font-size: 14px; font-weight: 600; padding: 10px 20px; border-radius: var(--r-xl); transition: background .2s, transform .15s; }
+    .nav__cta:hover { background: var(--accent-d); transform: translateY(-1px); }
+    @media (max-width: 768px) { .nav__links { display: none; } }
+
+    /* ── HERO ─────────────────────────────────────────────── */
+    .hero { background: linear-gradient(135deg, var(--primary) 0%, #fdeef0 50%, var(--secondary) 100%); padding: 80px 24px 96px; text-align: center; }
+    .hero__badge { display: inline-block; background: #fff; color: var(--accent-d); font-size: 13px; font-weight: 600; padding: 6px 16px; border-radius: var(--r-xl); margin-bottom: 24px; box-shadow: var(--sh-sm); }
+    .hero h1 { font-size: clamp(36px, 5vw, 62px); max-width: 700px; margin: 0 auto 20px; }
+    .hero p { font-size: 18px; color: var(--text-muted); max-width: 520px; margin: 0 auto 12px; }
+    .hero__zone { display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,.7); border: 1px solid var(--border); border-radius: var(--r-xl); padding: 8px 18px; font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 32px; }
+    .hero__zone span { color: var(--accent-d); }
+    .hero__actions { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+    .btn-primary { background: var(--accent); color: #fff; font-size: 16px; font-weight: 600; padding: 14px 28px; border-radius: var(--r-xl); box-shadow: 0 4px 14px rgba(224,122,133,.35); transition: background .2s, transform .15s; display: inline-block; }
+    .btn-primary:hover { background: var(--accent-d); transform: translateY(-2px); }
+    .btn-secondary { background: #fff; color: var(--text); font-size: 16px; font-weight: 600; padding: 14px 28px; border-radius: var(--r-xl); border: 2px solid var(--border); transition: border-color .2s, transform .15s; display: inline-block; }
+    .btn-secondary:hover { border-color: var(--accent); transform: translateY(-2px); }
+
+    /* ── STATS ─────────────────────────────────────────────── */
+    .stats { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; padding: 32px 24px; background: #fff; border-bottom: 1px solid var(--border); }
+    .stat { text-align: center; padding: 16px 32px; }
+    .stat__num { font-family: 'Noto Serif Display', serif; font-size: 36px; font-weight: 700; color: var(--accent-d); }
+    .stat__label { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+
+    /* ── ZONA ──────────────────────────────────────────────── */
+    .zone-banner { background: linear-gradient(90deg, var(--primary), var(--secondary)); padding: 24px; text-align: center; border-bottom: 1px solid var(--primary-d); }
+    .zone-banner p { font-size: 15px; font-weight: 500; }
+    .zone-banner strong { color: var(--accent-d); }
+    .zone-pills { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 12px; }
+    .zone-pill { background: #fff; border: 1.5px solid var(--accent); color: var(--accent-d); font-size: 13px; font-weight: 600; padding: 6px 16px; border-radius: var(--r-xl); }
+
+    /* ── SECTIONS ──────────────────────────────────────────── */
+    .section { padding: 80px 24px; }
+    .section--alt { background: var(--surface-2); }
+    .section__header { text-align: center; margin-bottom: 48px; }
+    .section__header h2 { font-size: clamp(28px, 3.5vw, 42px); margin-bottom: 12px; }
+    .section__header p { font-size: 16px; color: var(--text-muted); max-width: 520px; margin: 0 auto; }
+    .container { max-width: 1100px; margin: 0 auto; }
+
+    /* ── SERVICIOS ─────────────────────────────────────────── */
+    .services { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+    .service-card { background: #fff; border: 1px solid var(--border); border-radius: var(--r-lg); padding: 24px; transition: box-shadow .2s, transform .2s; }
+    .service-card:hover { box-shadow: var(--sh-md); transform: translateY(-3px); }
+    .service-card__icon { font-size: 32px; margin-bottom: 12px; }
+    .service-card h3 { font-size: 16px; margin-bottom: 6px; }
+    .service-card p { font-size: 13px; color: var(--text-muted); }
+
+    /* ── ANTES / DESPUÉS ──────────────────────────────────── */
+    .before-after-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; }
+    .ba-card { border-radius: var(--r-lg); overflow: hidden; box-shadow: var(--sh-md); background: #fff; border: 1px solid var(--border); }
+    .ba-card__title { padding: 14px 20px; font-size: 15px; font-weight: 600; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+    .ba-slider { position: relative; aspect-ratio: 4/3; overflow: hidden; cursor: ew-resize; user-select: none; }
+    .ba-after, .ba-before { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+    .ba-before { background: linear-gradient(135deg, #e8d5c4, #c9b49a); }
+    .ba-after  { background: linear-gradient(135deg, #d9f2d8, #a8d9a6); clip-path: inset(0 50% 0 0); transition: clip-path .05s; }
+    .ba-label { position: absolute; top: 10px; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: var(--r-xl); z-index: 2; pointer-events: none; }
+    .ba-label--before { left: 10px; background: rgba(0,0,0,.5); color: #fff; }
+    .ba-label--after  { right: 10px; background: var(--success); color: #fff; }
+    .ba-divider { position: absolute; top: 0; bottom: 0; width: 3px; background: #fff; box-shadow: 0 0 8px rgba(0,0,0,.3); z-index: 3; left: 50%; transform: translateX(-50%); pointer-events: none; }
+    .ba-handle { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 36px; height: 36px; background: #fff; border-radius: 50%; box-shadow: 0 2px 8px rgba(0,0,0,.25); z-index: 4; display: flex; align-items: center; justify-content: center; font-size: 16px; pointer-events: none; }
+    /* Fake content inside ba panels */
+    .ba-room-img { width: 100%; height: 100%; object-fit: cover; }
+    .ba-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 100%; }
+    .ba-placeholder .icon { font-size: 48px; opacity: .5; }
+    .ba-placeholder .label-txt { font-size: 13px; font-weight: 600; opacity: .6; }
+
+    /* ── CALENDARIO ─────────────────────────────────────────── */
+    .booking-layout { display: grid; grid-template-columns: 1fr 320px; gap: 32px; align-items: start; }
+    @media (max-width: 860px) { .booking-layout { grid-template-columns: 1fr; } }
+
+    .calendar-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    .calendar-nav h3 { font-size: 18px; }
+    .calendar-nav-btn { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--r-md); padding: 8px 14px; font-size: 15px; transition: background .15s; }
+    .calendar-nav-btn:hover { background: var(--primary); }
+
+    .week-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+    .day-col { display: flex; flex-direction: column; gap: 3px; }
+    .day-col__header { text-align: center; font-size: 11px; font-weight: 600; color: var(--text-muted); padding: 6px 2px; text-transform: uppercase; letter-spacing: .04em; }
+    .day-col__date { text-align: center; font-size: 13px; font-weight: 600; padding: 6px; border-radius: var(--r-sm); margin-bottom: 4px; }
+    .day-col__date.today { background: var(--accent); color: #fff; }
+
+    .slot { padding: 7px 3px; border-radius: var(--r-sm); text-align: center; font-size: 11px; font-weight: 500; cursor: pointer; transition: background .15s, transform .1s; border: 1.5px solid transparent; line-height: 1.3; }
+    .slot--available { background: var(--secondary); color: #1a6b19; border-color: var(--secondary-d); }
+    .slot--available:hover { background: var(--secondary-d); transform: scale(1.04); }
+    .slot--taken { background: #F3F4F6; color: #9CA3AF; cursor: not-allowed; }
+    .slot--buffer { background: #fef9c3; color: #92400e; cursor: not-allowed; font-size: 10px; }
+    .slot--selected { background: var(--accent); color: #fff; border-color: var(--accent-d); }
+    .slot--pack { background: #ede9fe; color: #5b21b6; border-color: #c4b5fd; }
+    .slot--pack:hover { background: #ddd6fe; }
+
+    /* ── PANEL RESERVA ─────────────────────────────────────── */
+    .booking-panel { background: #fff; border: 1px solid var(--border); border-radius: var(--r-lg); padding: 24px; box-shadow: var(--sh-sm); position: sticky; top: 80px; }
+    .booking-panel h3 { font-size: 18px; margin-bottom: 16px; }
+    .brow { margin-bottom: 14px; }
+    .brow label { display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 5px; }
+    .brow input[type="text"], .brow input[type="tel"], .brow select {
+      width: 100%; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: var(--r-md); font-size: 14px; font-family: inherit; outline: none; background: var(--surface); transition: border-color .2s;
+    }
+    .brow input:focus, .brow select:focus { border-color: var(--accent); }
+
+    .privacy-check { display: flex; align-items: flex-start; gap: 10px; font-size: 12px; color: var(--text-muted); line-height: 1.5; margin: 14px 0; }
+    .privacy-check input[type="checkbox"] { margin-top: 2px; accent-color: var(--accent); flex-shrink: 0; width: 16px; height: 16px; cursor: pointer; }
+    .privacy-check a { color: var(--accent-d); text-decoration: underline; }
+
+    .price-box { background: var(--primary); border-radius: var(--r-md); padding: 14px; margin: 16px 0; }
+    .price-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px; }
+    .price-total { display: flex; justify-content: space-between; font-size: 17px; font-weight: 700; border-top: 1px solid var(--primary-d); padding-top: 9px; margin-top: 6px; }
+
+    .btn-confirm { width: 100%; background: var(--accent); color: #fff; font-size: 15px; font-weight: 600; padding: 13px; border-radius: var(--r-xl); box-shadow: 0 4px 14px rgba(224,122,133,.3); transition: background .2s, transform .15s; }
+    .btn-confirm:hover { background: var(--accent-d); transform: translateY(-1px); }
+    .btn-confirm:disabled { background: #D1D5DB; box-shadow: none; cursor: not-allowed; transform: none; }
+    .no-slot-msg { font-size: 13px; color: var(--text-muted); text-align: center; padding: 24px 0; }
+    .slot-type-badge { display: inline-block; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: var(--r-xl); margin-bottom: 12px; }
+    .badge--single { background: var(--secondary); color: #1a6b19; }
+    .badge--pack   { background: #ede9fe; color: #5b21b6; }
+
+    /* ── PACKS ──────────────────────────────────────────────── */
+    .packs-intro { background: linear-gradient(135deg, #f5f3ff, #ede9fe); border-radius: var(--r-xl); padding: 36px; margin-bottom: 32px; text-align: center; }
+    .packs-intro h3 { font-size: 22px; margin-bottom: 8px; }
+    .packs-intro p { font-size: 15px; color: var(--text-muted); max-width: 520px; margin: 0 auto; }
+    .packs { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; }
+    .pack-card { background: #fff; border: 2px solid var(--border); border-radius: var(--r-lg); padding: 28px; transition: box-shadow .2s, border-color .2s, transform .2s; position: relative; }
+    .pack-card:hover { box-shadow: var(--sh-md); transform: translateY(-3px); }
+    .pack-card--popular { border-color: var(--accent); }
+    .pack-badge { position: absolute; top: -13px; left: 50%; transform: translateX(-50%); background: var(--accent); color: #fff; font-size: 12px; font-weight: 700; padding: 4px 16px; border-radius: var(--r-xl); white-space: nowrap; }
+    .pack-card__icon { font-size: 36px; margin-bottom: 14px; }
+    .pack-card h3 { font-size: 20px; margin-bottom: 6px; }
+    .pack-card__desc { font-size: 13px; color: var(--text-muted); margin-bottom: 18px; }
+    .pack-price { font-size: 32px; font-weight: 700; color: #5b21b6; }
+    .pack-price span { font-size: 15px; font-weight: 400; color: var(--text-muted); }
+    .pack-features { list-style: none; margin: 16px 0 20px; }
+    .pack-features li { font-size: 13px; padding: 5px 0; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+    .pack-features li:last-child { border-bottom: none; }
+    .pack-features li::before { content: '✓'; color: var(--success); font-weight: 700; }
+    .btn-pack-book { width: 100%; background: #5b21b6; color: #fff; font-size: 14px; font-weight: 600; padding: 12px; border-radius: var(--r-xl); transition: background .2s, transform .15s; }
+    .btn-pack-book:hover { background: #4c1d95; transform: translateY(-1px); }
+
+    /* ── CONFIGURADOR (colapsable) ────────────────────────── */
+    .config-toggle { width: 100%; background: var(--surface-2); border: 1.5px solid var(--border); border-radius: var(--r-md); padding: 14px 20px; font-size: 15px; font-weight: 600; text-align: left; display: flex; align-items: center; justify-content: space-between; margin-top: 40px; transition: background .15s; }
+    .config-toggle:hover { background: #f0f0f0; }
+    .config-toggle__arrow { transition: transform .25s; font-size: 12px; }
+    .config-toggle.open .config-toggle__arrow { transform: rotate(180deg); }
+    .pack-configurator { background: linear-gradient(135deg, #f5f3ff, var(--secondary)); border-radius: var(--r-xl); padding: 36px; margin-top: 8px; display: none; }
+    .pack-configurator.open { display: block; }
+    .pack-configurator h3 { font-size: 22px; margin-bottom: 8px; }
+    .pack-configurator > p { font-size: 14px; color: var(--text-muted); margin-bottom: 24px; }
+    .config-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .config-field label { display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 5px; }
+    .config-field select { width: 100%; padding: 10px 12px; border: 1.5px solid rgba(0,0,0,.1); border-radius: var(--r-md); font-size: 14px; font-family: inherit; background: rgba(255,255,255,.8); outline: none; }
+    .pack-calc { background: rgba(255,255,255,.8); border-radius: var(--r-md); padding: 18px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    @media (max-width: 480px) { .pack-calc { grid-template-columns: 1fr; } }
+    .pack-calc__opt { border: 2px solid transparent; border-radius: var(--r-md); padding: 14px; background: #fff; cursor: pointer; transition: border-color .2s; }
+    .pack-calc__opt:hover, .pack-calc__opt.active { border-color: #5b21b6; }
+    .pack-calc__opt h4 { font-size: 13px; color: var(--text-muted); margin-bottom: 4px; }
+    .pack-calc__opt .amount { font-size: 26px; font-weight: 700; color: #5b21b6; }
+    .pack-calc__opt .amount span { font-size: 13px; font-weight: 400; color: var(--text-muted); }
+    .save-badge { display: inline-block; background: var(--secondary); color: #1a6b19; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: var(--r-xl); margin-top: 4px; }
+    .pack-calc__detail { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+    .btn-cfg-book { margin-top: 18px; background: #5b21b6; color: #fff; font-size: 14px; font-weight: 600; padding: 12px 28px; border-radius: var(--r-xl); transition: background .2s; }
+    .btn-cfg-book:hover { background: #4c1d95; }
+
+    /* ── BEFORE / AFTER ──────────────────────────────────── */
+    .ba-note { text-align: center; font-size: 13px; color: var(--text-muted); margin-top: 20px; }
+
+    /* ── TESTIMONIOS ─────────────────────────────────────── */
+    .testimonials { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
+    .testimonial { background: #fff; border: 1px solid var(--border); border-radius: var(--r-lg); padding: 24px; transition: box-shadow .2s; }
+    .testimonial:hover { box-shadow: var(--sh-md); }
+    .testimonial__stars { color: #FBBF24; font-size: 15px; margin-bottom: 10px; }
+    .testimonial__text { font-size: 14px; color: var(--text-muted); line-height: 1.7; margin-bottom: 14px; font-style: italic; }
+    .testimonial__author { display: flex; align-items: center; gap: 10px; }
+    .testimonial__avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 16px; }
+    .testimonial__name { font-size: 13px; font-weight: 600; }
+    .testimonial__since { font-size: 12px; color: var(--text-muted); }
+
+    /* ── FAQ ─────────────────────────────────────────────── */
+    .faq { max-width: 720px; margin: 0 auto; }
+    .faq-item { border-bottom: 1px solid var(--border); }
+    .faq-item summary { display: flex; justify-content: space-between; align-items: center; padding: 18px 0; font-size: 15px; font-weight: 500; cursor: pointer; list-style: none; }
+    .faq-item summary::-webkit-details-marker { display: none; }
+    .faq-item summary::after { content: '+'; font-size: 20px; color: var(--accent); transition: transform .2s; }
+    .faq-item[open] summary::after { transform: rotate(45deg); }
+    .faq-item p { padding: 0 0 16px; font-size: 14px; color: var(--text-muted); line-height: 1.7; }
+
+    /* ── CTA ─────────────────────────────────────────────── */
+    .cta-section { background: linear-gradient(135deg, var(--accent) 0%, #d4576a 100%); color: #fff; text-align: center; padding: 80px 24px; }
+    .cta-section h2 { font-size: clamp(28px, 4vw, 48px); margin-bottom: 16px; }
+    .cta-section p { font-size: 17px; opacity: .85; max-width: 500px; margin: 0 auto 32px; }
+    .btn-white { background: #fff; color: var(--accent-d); font-size: 16px; font-weight: 700; padding: 14px 32px; border-radius: var(--r-xl); box-shadow: 0 4px 20px rgba(0,0,0,.15); transition: transform .15s; display: inline-block; }
+    .btn-white:hover { transform: translateY(-2px); }
+
+    /* ── FOOTER ─────────────────────────────────────────── */
+    footer { background: var(--text); color: #fff; padding: 48px 24px 24px; }
+    .footer__grid { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 40px; margin-bottom: 36px; }
+    @media (max-width: 640px) { .footer__grid { grid-template-columns: 1fr; } }
+    .footer__brand { font-family: 'Noto Serif Display', serif; font-size: 22px; font-weight: 700; margin-bottom: 10px; }
+    .footer__brand span { color: var(--primary); }
+    .footer__desc { font-size: 13px; color: #9CA3AF; line-height: 1.7; }
+    .footer__col h4 { font-size: 13px; font-weight: 600; color: #E5E7EB; margin-bottom: 10px; }
+    .footer__col ul { list-style: none; }
+    .footer__col ul li { margin-bottom: 7px; }
+    .footer__col ul li a { font-size: 13px; color: #9CA3AF; transition: color .2s; }
+    .footer__col ul li a:hover { color: var(--primary); }
+    .footer__bottom { max-width: 1100px; margin: 0 auto; border-top: 1px solid #374151; padding-top: 18px; text-align: center; font-size: 12px; color: #6B7280; }
+
+    /* ── MODAL ──────────────────────────────────────────── */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 200; align-items: center; justify-content: center; padding: 20px; }
+    .modal-overlay.open { display: flex; }
+    .modal { background: #fff; border-radius: var(--r-xl); padding: 32px; max-width: 460px; width: 100%; box-shadow: var(--sh-lg); animation: slideUp .25s ease; position: relative; }
+    @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: none; opacity: 1; } }
+    .modal h3 { font-size: 20px; margin-bottom: 4px; }
+    .modal-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; }
+    .modal-close { position: absolute; top: 14px; right: 14px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 50%; width: 30px; height: 30px; font-size: 15px; }
+    .modal-success { text-align: center; padding: 16px 0; }
+    .modal-success .s-icon { font-size: 56px; margin-bottom: 12px; }
+    .modal-success h3 { font-size: 22px; margin-bottom: 8px; }
+    .modal-success p { font-size: 14px; color: var(--text-muted); }
+
+    /* ── PRIVACY PAGE ──────────────────────────────────── */
+    .privacy-page { display: none; }
+
+    /* ── TOAST ──────────────────────────────────────────── */
+    .toast { position: fixed; bottom: 24px; right: 24px; z-index: 300; background: var(--text); color: #fff; padding: 12px 20px; border-radius: var(--r-md); font-size: 14px; font-weight: 500; box-shadow: var(--sh-lg); transform: translateY(80px); transition: transform .3s; }
+    .toast.show { transform: none; }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav__inner">
+    <div class="nav__logo">Limpia<span>Hogar</span></div>
+    <div class="nav__links">
+      <a href="#servicios">Servicios</a>
+      <a href="#reservar">Reservar cita</a>
+      <a href="#packs">Packs</a>
+      <a href="#resultados">Resultados</a>
+      <a href="#faq">FAQ</a>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center">
+      <a href="cliente.html" style="font-size:13px;font-weight:600;color:var(--accent-d);padding:8px 16px;border:1.5px solid var(--primary-d);border-radius:var(--r-xl);transition:background .15s" onmouseover="this.style.background='var(--primary)'" onmouseout="this.style.background='transparent'">Mi área</a>
+      <a href="#reservar" class="nav__cta">Reservar ahora</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero__badge">🌿 Servicio de confianza desde 2018</div>
+  <h1>Tu hogar, siempre impecable</h1>
+  <p>Limpieza profesional a domicilio. Reserva en minutos, sin sorpresas.</p>
+  <div class="hero__zone">
+    📍 Servicio en <span>Colmenar Viejo · Tres Cantos · Norte de Madrid</span>
+  </div>
+  <div class="hero__actions">
+    <a href="#reservar" class="btn-primary">Reservar una cita</a>
+    <a href="#packs" class="btn-secondary">Ver packs</a>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="stat"><div class="stat__num">1.200+</div><div class="stat__label">Hogares atendidos</div></div>
+  <div class="stat"><div class="stat__num">4,9 ★</div><div class="stat__label">Valoración media</div></div>
+  <div class="stat"><div class="stat__num">100%</div><div class="stat__label">Profesionales verificados</div></div>
+  <div class="stat"><div class="stat__num">15 €/h</div><div class="stat__label">Precio cita puntual</div></div>
+</div>
+
+<!-- ZONA -->
+<div class="zone-banner">
+  <p>Actualmente cubrimos el <strong>norte de la Comunidad de Madrid</strong></p>
+  <div class="zone-pills">
+    <div class="zone-pill">📍 Colmenar Viejo</div>
+    <div class="zone-pill">📍 Tres Cantos</div>
+    <div class="zone-pill">📍 Norte de Madrid</div>
+  </div>
+</div>
+
+<!-- SERVICIOS -->
+<section class="section" id="servicios">
+  <div class="container">
+    <div class="section__header">
+      <h2>¿Qué incluye nuestro servicio?</h2>
+      <p>Limpieza profesional con tus propios productos y materiales del hogar</p>
+    </div>
+    <div class="services">
+      <div class="service-card"><div class="service-card__icon">🛋️</div><h3>Salón y comedor</h3><p>Aspirado, barrido, fregado de suelos y limpieza de superficies.</p></div>
+      <div class="service-card"><div class="service-card__icon">🍳</div><h3>Cocina</h3><p>Encimeras, electrodomésticos exteriores, fregadero y suelos.</p></div>
+      <div class="service-card"><div class="service-card__icon">🛁</div><h3>Baños</h3><p>Sanitarios, azulejos, espejos, suelo y reposición de consumibles.</p></div>
+      <div class="service-card"><div class="service-card__icon">🛏️</div><h3>Dormitorios</h3><p>Cambio de ropa de cama, aspirado y limpieza de superficies.</p></div>
+      <div class="service-card"><div class="service-card__icon">🪟</div><h3>Cristales</h3><p>Ventanas interiores y espejos en todas las estancias.</p></div>
+      <div class="service-card"><div class="service-card__icon">🧴</div><h3>Tus productos</h3><p>Usamos los productos de limpieza que ya tienes en casa, según tus preferencias.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ANTES / DESPUÉS -->
+<section class="section section--alt" id="resultados">
+  <div class="container">
+    <div class="section__header">
+      <h2>Resultados reales</h2>
+      <p>Desliza para comparar el antes y el después en las zonas más críticas</p>
+    </div>
+    <div class="before-after-grid">
+
+      <div class="ba-card">
+        <div class="ba-card__title">🍳 Cocina — encimera y fogones</div>
+        <div class="ba-slider" data-slider>
+          <div class="ba-before">
+            <div class="ba-placeholder">
+              <div class="icon">🍳</div>
+              <div class="label-txt" style="color:#7c5a3a">Antes — suciedad acumulada</div>
+            </div>
+          </div>
+          <div class="ba-after">
+            <div class="ba-placeholder">
+              <div class="icon">✨</div>
+              <div class="label-txt" style="color:#1a6b19">Después — impecable</div>
+            </div>
+          </div>
+          <div class="ba-label ba-label--before">Antes</div>
+          <div class="ba-label ba-label--after">Después</div>
+          <div class="ba-divider"></div>
+          <div class="ba-handle">↔</div>
+        </div>
+      </div>
+
+      <div class="ba-card">
+        <div class="ba-card__title">🛁 Baño — sanitarios y azulejos</div>
+        <div class="ba-slider" data-slider>
+          <div class="ba-before">
+            <div class="ba-placeholder">
+              <div class="icon">🛁</div>
+              <div class="label-txt" style="color:#7c5a3a">Antes — cal y suciedad</div>
+            </div>
+          </div>
+          <div class="ba-after">
+            <div class="ba-placeholder">
+              <div class="icon">✨</div>
+              <div class="label-txt" style="color:#1a6b19">Después — brillante</div>
+            </div>
+          </div>
+          <div class="ba-label ba-label--before">Antes</div>
+          <div class="ba-label ba-label--after">Después</div>
+          <div class="ba-divider"></div>
+          <div class="ba-handle">↔</div>
+        </div>
+      </div>
+
+      <div class="ba-card">
+        <div class="ba-card__title">🪟 Cristales y ventanas</div>
+        <div class="ba-slider" data-slider>
+          <div class="ba-before">
+            <div class="ba-placeholder">
+              <div class="icon">🪟</div>
+              <div class="label-txt" style="color:#7c5a3a">Antes — huellas y polvo</div>
+            </div>
+          </div>
+          <div class="ba-after">
+            <div class="ba-placeholder">
+              <div class="icon">✨</div>
+              <div class="label-txt" style="color:#1a6b19">Después — transparente</div>
+            </div>
+          </div>
+          <div class="ba-label ba-label--before">Antes</div>
+          <div class="ba-label ba-label--after">Después</div>
+          <div class="ba-divider"></div>
+          <div class="ba-handle">↔</div>
+        </div>
+      </div>
+
+      <div class="ba-card">
+        <div class="ba-card__title">🛋️ Salón — suelos y polvo</div>
+        <div class="ba-slider" data-slider>
+          <div class="ba-before">
+            <div class="ba-placeholder">
+              <div class="icon">🛋️</div>
+              <div class="label-txt" style="color:#7c5a3a">Antes — polvo acumulado</div>
+            </div>
+          </div>
+          <div class="ba-after">
+            <div class="ba-placeholder">
+              <div class="icon">✨</div>
+              <div class="label-txt" style="color:#1a6b19">Después — reluciente</div>
+            </div>
+          </div>
+          <div class="ba-label ba-label--before">Antes</div>
+          <div class="ba-label ba-label--after">Después</div>
+          <div class="ba-divider"></div>
+          <div class="ba-handle">↔</div>
+        </div>
+      </div>
+
+    </div>
+    <p class="ba-note">💡 Cuando tengas fotos reales, reemplaza los placeholders por imágenes en el archivo HTML — sección <code>ba-before</code> / <code>ba-after</code></p>
+  </div>
+</section>
+
+<!-- RESERVA CITA PUNTUAL -->
+<section class="section" id="reservar">
+  <div class="container">
+    <div class="section__header">
+      <h2>Reserva tu cita</h2>
+      <p>Mínimo <strong>2 horas · 15 €/h</strong>. Hay 30 min de margen entre citas. Elige día, hora y duración.</p>
+    </div>
+    <div class="booking-layout">
+
+      <div>
+        <div class="calendar-nav">
+          <button class="calendar-nav-btn" id="prevWeek">← Anterior</button>
+          <h3 id="weekLabel"></h3>
+          <button class="calendar-nav-btn" id="nextWeek">Siguiente →</button>
+        </div>
+        <div class="week-grid" id="weekGrid"></div>
+      </div>
+
+      <div class="booking-panel">
+        <h3>Tu reserva</h3>
+        <div id="noSlotMsg" class="no-slot-msg">Selecciona una franja en el calendario para continuar.</div>
+        <div id="bookingForm" style="display:none">
+          <div id="slotTypeBadge"></div>
+          <div class="brow">
+            <label>Fecha y hora</label>
+            <div id="selectedSlotDisplay" style="font-weight:600;font-size:15px;color:var(--accent-d)"></div>
+          </div>
+          <div class="brow">
+            <label for="duration">Duración</label>
+            <select id="duration" onchange="updatePrice()">
+              <option value="2" selected>2 horas</option>
+              <option value="2.5">2 horas 30 min</option>
+              <option value="3">3 horas</option>
+              <option value="3.5">3 horas 30 min</option>
+              <option value="4">4 horas</option>
+              <option value="5">5 horas</option>
+              <option value="6">6 horas</option>
+            </select>
+          </div>
+          <div class="brow">
+            <label for="clientName">Tu nombre</label>
+            <input type="text" id="clientName" placeholder="María García" autocomplete="name" />
+          </div>
+          <div class="brow">
+            <label for="clientPhone">Teléfono de contacto</label>
+            <input type="tel" id="clientPhone" placeholder="600 000 000" autocomplete="tel" />
+          </div>
+          <div class="privacy-check">
+            <input type="checkbox" id="privacyCheck" />
+            <label for="privacyCheck">He leído y acepto la <a href="#privacidad">política de privacidad</a>. Autorizo el uso de mi teléfono únicamente para gestionar esta reserva.</label>
+          </div>
+          <div class="price-box">
+            <div class="price-row"><span>Duración</span><span id="priceDurVal">2 h</span></div>
+            <div class="price-row" id="priceRateRow"><span>Precio/hora</span><span id="priceRateVal">15,00 €</span></div>
+            <div class="price-total"><span>Total</span><span id="totalPrice">30,00 €</span></div>
+          </div>
+          <button class="btn-confirm" id="confirmBtn">Confirmar reserva</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PACKS -->
+<section class="section section--alt" id="packs">
+  <div class="container">
+    <div class="section__header">
+      <h2>Packs de limpieza</h2>
+      <p>Ahorra con un pack periódico. <strong>12 €/hora</strong> — 20% menos que la cita puntual</p>
+    </div>
+
+    <div class="packs">
+      <div class="pack-card">
+        <div class="pack-card__icon">🌱</div>
+        <h3>Pack Básico</h3>
+        <p class="pack-card__desc">2 horas semanales. Ideal para mantener el orden en hogares pequeños.</p>
+        <div class="pack-price">96 € <span>/ mes</span></div>
+        <ul class="pack-features">
+          <li>2 h por sesión</li>
+          <li>1 vez por semana</li>
+          <li>~4 sesiones al mes</li>
+          <li>12 €/hora (ahorra un 20%)</li>
+          <li>Mismo profesional siempre</li>
+        </ul>
+        <button class="btn-pack-book" onclick="activatePackMode({hours:2,freq:1,monthly:96,name:'Pack Básico'})">
+          📅 Reservar en el calendario
+        </button>
+      </div>
+
+      <div class="pack-card pack-card--popular">
+        <div class="pack-badge">⭐ Más popular</div>
+        <div class="pack-card__icon">🏠</div>
+        <h3>Pack Hogar</h3>
+        <p class="pack-card__desc">3 horas semanales. Limpieza completa para hogares medianos.</p>
+        <div class="pack-price">144 € <span>/ mes</span></div>
+        <ul class="pack-features">
+          <li>3 h por sesión — bloque de 2+1</li>
+          <li>1 vez por semana</li>
+          <li>~4 sesiones al mes</li>
+          <li>12 €/hora (ahorra un 20%)</li>
+          <li>Mismo profesional siempre</li>
+          <li>Gestión flexible de citas</li>
+        </ul>
+        <button class="btn-pack-book" onclick="activatePackMode({hours:3,freq:1,monthly:144,name:'Pack Hogar'})">
+          📅 Reservar en el calendario
+        </button>
+      </div>
+
+      <div class="pack-card">
+        <div class="pack-card__icon">✨</div>
+        <h3>Pack Premium</h3>
+        <p class="pack-card__desc">4 horas semanales. Para hogares grandes que requieren limpieza profunda.</p>
+        <div class="pack-price">192 € <span>/ mes</span></div>
+        <ul class="pack-features">
+          <li>4 h por sesión — 2 bloques de 2 h</li>
+          <li>1 vez por semana</li>
+          <li>~4 sesiones al mes</li>
+          <li>12 €/hora (ahorra un 20%)</li>
+          <li>Mismo profesional siempre</li>
+          <li>Prioridad en cambios de cita</li>
+        </ul>
+        <button class="btn-pack-book" onclick="activatePackMode({hours:4,freq:1,monthly:192,name:'Pack Premium'})">
+          📅 Reservar en el calendario
+        </button>
+      </div>
+    </div>
+
+    <!-- CONFIGURADOR COLAPSABLE -->
+    <button class="config-toggle" id="configToggle" onclick="toggleConfigurator()">
+      <span>🧮 ¿Ningún pack te encaja? Calcula el tuyo personalizado</span>
+      <span class="config-toggle__arrow">▼</span>
+    </button>
+    <div class="pack-configurator" id="packConfigurator">
+      <h3>Calcula tu pack</h3>
+      <p>Elige las horas y la frecuencia que necesitas.</p>
+      <div class="config-grid">
+        <div class="config-field">
+          <label for="packHours">Horas por sesión</label>
+          <select id="packHours">
+            <option value="2" selected>2 horas</option>
+            <option value="3">3 horas</option>
+            <option value="4">4 horas</option>
+            <option value="5">5 horas</option>
+            <option value="6">6 horas</option>
+          </select>
+        </div>
+        <div class="config-field">
+          <label for="packFreq">Frecuencia</label>
+          <select id="packFreq">
+            <option value="1" selected>Semanal (~4 veces/mes)</option>
+            <option value="0.5">Quincenal (~2 veces/mes)</option>
+            <option value="0.25">Mensual (1 vez/mes)</option>
+          </select>
+        </div>
+      </div>
+      <div class="pack-calc" id="packCalc">
+        <div class="pack-calc__opt active" id="monthlyOpt">
+          <h4>💳 Pago mensual</h4>
+          <div class="amount" id="monthlyAmt">96,00 € <span>/ mes</span></div>
+          <div class="pack-calc__detail" id="monthlyDetail">~4 × 2 h × 12 €</div>
+        </div>
+        <div class="pack-calc__opt" id="semestralOpt">
+          <h4>🎯 Pago semestral</h4>
+          <div class="amount" id="semestralAmt">547,20 € <span>/ semestre</span></div>
+          <div class="save-badge" id="saveBadge">Ahorras 28,80 €</div>
+          <div class="pack-calc__detail" id="semestralDetail">6 × 96 € − 5%</div>
+        </div>
+      </div>
+      <button class="btn-cfg-book" onclick="activateCustomPackMode()">📅 Reservar con este pack</button>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIOS -->
+<section class="section" id="testimonios">
+  <div class="container">
+    <div class="section__header">
+      <h2>Lo que dicen nuestros clientes</h2>
+      <p>Más de 1.200 familias en el norte de Madrid confían en nosotros</p>
+    </div>
+    <div class="testimonials">
+      <div class="testimonial">
+        <div class="testimonial__stars">★★★★★</div>
+        <p class="testimonial__text">"Llevo 8 meses con el pack semanal y no puedo estar más contenta. Siempre puntual, mi casa queda impecable y la misma persona cada vez, que ya conoce mis preferencias."</p>
+        <div class="testimonial__author"><div class="testimonial__avatar">👩</div><div><div class="testimonial__name">Carmen R. — Colmenar Viejo</div><div class="testimonial__since">Cliente desde 2023</div></div></div>
+      </div>
+      <div class="testimonial">
+        <div class="testimonial__stars">★★★★★</div>
+        <p class="testimonial__text">"Reservar es muy fácil, en 2 minutos tengo mi cita. Me encanta que usen mis propios productos, sé exactamente lo que están usando en casa con mis hijos."</p>
+        <div class="testimonial__author"><div class="testimonial__avatar">👨</div><div><div class="testimonial__name">Javier M. — Tres Cantos</div><div class="testimonial__since">Cliente desde 2024</div></div></div>
+      </div>
+      <div class="testimonial">
+        <div class="testimonial__stars">★★★★★</div>
+        <p class="testimonial__text">"Probé con una cita puntual para una reunión familiar y quedé tan satisfecha que contraté el pack mensual. El nivel de detalle es excepcional."</p>
+        <div class="testimonial__author"><div class="testimonial__avatar">👩‍🦱</div><div><div class="testimonial__name">Lucía P. — Norte de Madrid</div><div class="testimonial__since">Cliente desde 2022</div></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section section--alt" id="faq">
+  <div class="container">
+    <div class="section__header"><h2>Preguntas frecuentes</h2></div>
+    <div class="faq">
+      <details class="faq-item">
+        <summary>¿Tengo que estar en casa durante la limpieza?</summary>
+        <p>No es necesario. Muchos clientes nos dejan una llave o código de acceso. Todo el personal está verificado y cubierto por nuestro seguro de responsabilidad civil.</p>
+      </details>
+      <details class="faq-item">
+        <summary>¿Qué productos de limpieza se usan?</summary>
+        <p>Utilizamos los productos que ya tienes en tu hogar. Así respetamos tus preferencias, tus alergias y lo que tienes disponible. Si necesitas recomendaciones sobre qué tener preparado, te lo indicamos al confirmar la cita.</p>
+      </details>
+      <details class="faq-item">
+        <summary>¿Qué pasa si necesito cancelar o cambiar mi cita?</summary>
+        <p>Puedes cancelar o modificar con al menos 24 horas de antelación sin coste. Los cambios con menos de 24 horas están sujetos a un cargo del 50%.</p>
+      </details>
+      <details class="faq-item">
+        <summary>¿Cuál es la diferencia entre una cita puntual y un pack?</summary>
+        <p>Las citas puntuales tienen un mínimo de 2 horas a 15 €/hora (30 € mínimo). Los packs son suscripciones periódicas a 12 €/hora con el mismo profesional siempre y mayor flexibilidad en la gestión de citas.</p>
+      </details>
+      <details class="faq-item">
+        <summary>¿En qué zonas operáis?</summary>
+        <p>Actualmente cubrimos Colmenar Viejo, Tres Cantos y el norte de Madrid. Si tienes dudas sobre si llegamos a tu dirección concreta, escríbenos al teléfono de contacto.</p>
+      </details>
+      <details class="faq-item">
+        <summary>¿Cómo protegéis mis datos personales?</summary>
+        <p>Solo recogemos tu nombre y teléfono para gestionar la reserva. No cedemos tus datos a terceros ni los usamos con fines comerciales. Puedes ejercer tus derechos ARCO escribiéndonos. Consulta nuestra <a href="#privacidad" style="color:var(--accent-d)">política de privacidad</a> completa.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- POLÍTICA DE PRIVACIDAD (ancla) -->
+<section class="section" id="privacidad">
+  <div class="container">
+    <div style="max-width:720px;margin:0 auto">
+      <h2 style="margin-bottom:24px">Política de privacidad</h2>
+      <p style="font-size:14px;color:var(--text-muted);line-height:1.8;margin-bottom:16px"><strong>Responsable:</strong> LimpiaHogar (en adelante, "el servicio").</p>
+      <p style="font-size:14px;color:var(--text-muted);line-height:1.8;margin-bottom:16px"><strong>Datos recogidos:</strong> nombre completo y número de teléfono, únicamente para confirmar, gestionar y modificar reservas de limpieza.</p>
+      <p style="font-size:14px;color:var(--text-muted);line-height:1.8;margin-bottom:16px"><strong>Base legal:</strong> ejecución de un contrato (artículo 6.1.b del RGPD).</p>
+      <p style="font-size:14px;color:var(--text-muted);line-height:1.8;margin-bottom:16px"><strong>Finalidad:</strong> gestión exclusiva de la reserva. No se usarán los datos para envío de comunicaciones comerciales sin consentimiento expreso.</p>
+      <p style="font-size:14px;color:var(--text-muted);line-height:1.8;margin-bottom:16px"><strong>Cesión a terceros:</strong> los datos no se ceden a terceros salvo obligación legal.</p>
+      <p style="font-size:14px;color:var(--text-muted);line-height:1.8;margin-bottom:16px"><strong>Conservación:</strong> los datos se conservan durante la relación contractual y hasta 3 años después para cumplimiento de obligaciones legales.</p>
+      <p style="font-size:14px;color:var(--text-muted);line-height:1.8"><strong>Derechos:</strong> puedes ejercer tus derechos de acceso, rectificación, cancelación y oposición (ARCO) contactando en info@limpiahogar.es o en el teléfono de contacto.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CTA FINAL -->
+<section class="cta-section">
+  <h2>Tu hogar merece lo mejor</h2>
+  <p>Primera cita con un 15% de descuento. Sin compromiso.</p>
+  <a href="#reservar" class="btn-white">Reservar ahora — desde 30 € / 2 horas</a>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer__grid">
+    <div>
+      <div class="footer__brand">Limpia<span>Hogar</span></div>
+      <p class="footer__desc">Servicio profesional de limpieza a domicilio en Colmenar Viejo, Tres Cantos y norte de Madrid.</p>
+    </div>
+    <div class="footer__col">
+      <h4>Servicios</h4>
+      <ul>
+        <li><a href="#reservar">Cita puntual</a></li>
+        <li><a href="#packs">Pack Básico</a></li>
+        <li><a href="#packs">Pack Hogar</a></li>
+        <li><a href="#packs">Pack Premium</a></li>
+      </ul>
+    </div>
+    <div class="footer__col">
+      <h4>Legal</h4>
+      <ul>
+        <li><a href="#privacidad">Política de privacidad</a></li>
+        <li><a href="#">Aviso legal</a></li>
+        <li><a href="#">Términos del servicio</a></li>
+        <li><a href="panel.html">Acceso limpiadores</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer__bottom">© 2025 LimpiaHogar · Colmenar Viejo · Tres Cantos · Norte de Madrid · 📞 600 000 000 · info@limpiahogar.es</div>
+</footer>
+
+<!-- MODAL CONFIRMAR CITA -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('confirmModal')">✕</button>
+    <div id="modalContent">
+      <h3>Confirmar reserva</h3>
+      <p class="modal-sub" id="modalSub"></p>
+      <div class="price-box" id="modalSummary"></div>
+      <button class="btn-confirm" style="margin-top:14px" onclick="finalConfirm()">✓ Confirmar cita</button>
+    </div>
+    <div id="modalSuccess" class="modal-success" style="display:none">
+      <div class="s-icon">🎉</div>
+      <h3>¡Reserva confirmada!</h3>
+      <p>Te contactaremos por teléfono para confirmar todos los detalles. ¡Hasta pronto!</p>
+      <button class="btn-primary" style="margin-top:18px" onclick="closeModal('confirmModal')">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PACK -->
+<div class="modal-overlay" id="packModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('packModal')">✕</button>
+    <div id="packModalContent">
+      <h3 id="packModalTitle">Reservar pack</h3>
+      <p class="modal-sub" id="packModalSub">Elige las semanas en el calendario y rellena tus datos.</p>
+      <div class="price-box" id="packModalSummary" style="margin-bottom:14px"></div>
+      <div class="brow"><label>Nombre</label><input type="text" id="packName" placeholder="María García" /></div>
+      <div class="brow"><label>Teléfono</label><input type="tel" id="packPhone" placeholder="600 000 000" /></div>
+      <div class="privacy-check">
+        <input type="checkbox" id="packPrivacy" />
+        <label for="packPrivacy">Acepto la <a href="#privacidad">política de privacidad</a>. Autorizo el uso de mi teléfono para gestionar este pack.</label>
+      </div>
+      <button class="btn-confirm" style="margin-top:8px" onclick="finalPackConfirm()">Solicitar pack</button>
+    </div>
+    <div id="packModalSuccess" class="modal-success" style="display:none">
+      <div class="s-icon">🌟</div>
+      <h3>¡Solicitud enviada!</h3>
+      <p>Te llamaremos en menos de 24 horas para confirmar tu pack y fijar tus citas recurrentes.</p>
+      <button class="btn-primary" style="margin-top:18px" onclick="closeModal('packModal')">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ══════════════════════════════════════════════
+   ESTADO
+══════════════════════════════════════════════ */
+const PRICE_PUNTUAL = 15;
+const PRICE_PACK    = 12;
+const MIN_HRS       = 2;      // duración mínima
+const BUFFER_MINS   = 30;
+const SLOT_INT      = 30;     // intervalo visible (minutos)
+const WORK_START    = 8 * 60; // 08:00 en minutos
+const WORK_END      = 20 * 60;
+
+// { "YYYY-MM-DD HH:MM": { dur: horas, type: 'single'|'pack' } }
+const reservations = {
+  [fmtDate(dateOffset(1)) + ' 10:00']: { dur: 2, type: 'single' },
+  [fmtDate(dateOffset(2)) + ' 09:00']: { dur: 2, type: 'pack' },
+  [fmtDate(dateOffset(3)) + ' 16:00']: { dur: 2, type: 'single' },
+};
+
+let weekOffset  = 0;
+let selectedSlot = null;  // { date, time }
+let packMode     = null;  // null | { hours, freq, monthly, name }
+
+const DAYS = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+
+/* ══════════════════════════════════════════════
+   UTILIDADES
+══════════════════════════════════════════════ */
+function fmtDate(d) { return d.toISOString().split('T')[0]; }
+function dateOffset(n) { const d = new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()+n); return d; }
+function eur(n) { return n.toFixed(2).replace('.',',') + ' €'; }
+function weekStart(off=0) {
+  const t = new Date(); t.setHours(0,0,0,0);
+  const dow = t.getDay(); // 0=Dom
+  t.setDate(t.getDate() + (dow===0 ? -6 : 1-dow) + off*7);
+  return t;
+}
+
+/* ══════════════════════════════════════════════
+   SLOT LOGIC
+══════════════════════════════════════════════ */
+function slotStatus(dateStr, timeStr) {
+  const [sh,sm] = timeStr.split(':').map(Number);
+  const sMin = sh*60+sm;
+  for (const [key, r] of Object.entries(reservations)) {
+    if (!key.startsWith(dateStr)) continue;
+    const [,bt] = key.split(' ');
+    const [bh,bm] = bt.split(':').map(Number);
+    const bStart = bh*60+bm;
+    const bEnd   = bStart + r.dur*60 + BUFFER_MINS;
+    const bPre   = bStart - BUFFER_MINS;
+    if (sMin >= bPre && sMin < bEnd) return 'taken';
+  }
+  // Check minimum block fits before end of day
+  const selDur = parseFloat(document.getElementById('duration')?.value || MIN_HRS);
+  const endMin = sMin + selDur * 60;
+  if (endMin > WORK_END) return 'taken';
+  return 'available';
+}
+
+/* ══════════════════════════════════════════════
+   RENDER CALENDAR
+══════════════════════════════════════════════ */
+function renderCalendar() {
+  const ws  = weekStart(weekOffset);
+  const we  = new Date(ws); we.setDate(ws.getDate()+6);
+  const fmt = d => d.toLocaleDateString('es-ES',{day:'numeric',month:'short'});
+  document.getElementById('weekLabel').textContent = `${fmt(ws)} — ${fmt(we)}`;
+
+  const grid  = document.getElementById('weekGrid');
+  grid.innerHTML = '';
+  const today = new Date(); today.setHours(0,0,0,0);
+
+  for (let d=0; d<7; d++) {
+    const date = new Date(ws); date.setDate(ws.getDate()+d);
+    const dStr  = fmtDate(date);
+    const isPast = date < today;
+    const isToday = date.getTime() === today.getTime();
+
+    const col = document.createElement('div'); col.className = 'day-col';
+
+    const hdr = document.createElement('div'); hdr.className='day-col__header'; hdr.textContent=DAYS[d]; col.appendChild(hdr);
+    const dDiv = document.createElement('div'); dDiv.className='day-col__date'+(isToday?' today':''); dDiv.textContent=date.getDate(); col.appendChild(dDiv);
+
+    for (let m=WORK_START; m<WORK_END; m+=SLOT_INT) {
+      const hh = String(Math.floor(m/60)).padStart(2,'0');
+      const mm = String(m%60).padStart(2,'0');
+      const t  = `${hh}:${mm}`;
+      const el = document.createElement('div');
+      el.dataset.date = dStr; el.dataset.time = t;
+
+      if (isPast) {
+        el.className='slot slot--taken'; el.textContent=t;
+      } else {
+        const st = slotStatus(dStr, t);
+        if (st==='taken') {
+          el.className='slot slot--taken';
+        } else {
+          el.className = packMode ? 'slot slot--pack slot--available' : 'slot slot--available';
+          el.addEventListener('click', ()=>selectSlot(date,t,el));
+        }
+        el.textContent=t;
+      }
+      col.appendChild(el);
+    }
+    grid.appendChild(col);
+  }
+}
+
+function selectSlot(date, time, el) {
+  document.querySelectorAll('.slot--selected').forEach(s=>{
+    s.classList.remove('slot--selected');
+    s.classList.add(packMode ? 'slot--pack' : 'slot--available');
+  });
+  el.classList.remove('slot--available','slot--pack'); el.classList.add('slot--selected');
+  selectedSlot = { date, time };
+
+  const dl = date.toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'});
+  document.getElementById('selectedSlotDisplay').textContent=`${dl} a las ${time}`;
+  document.getElementById('noSlotMsg').style.display='none';
+  document.getElementById('bookingForm').style.display='block';
+
+  const isPack = !!packMode;
+  updatePrice();
+  document.getElementById('slotTypeBadge').innerHTML = isPack
+    ? `<span class="slot-type-badge badge--pack">📦 ${packMode.name}</span>`
+    : `<span class="slot-type-badge badge--single">📅 Cita puntual</span>`;
+
+  document.getElementById('reservar').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+document.getElementById('prevWeek').addEventListener('click',()=>{ weekOffset--; clearSelection(); renderCalendar(); });
+document.getElementById('nextWeek').addEventListener('click',()=>{ weekOffset++; renderCalendar(); });
+
+function clearSelection() {
+  selectedSlot=null;
+  document.getElementById('noSlotMsg').style.display='block';
+  document.getElementById('bookingForm').style.display='none';
+}
+
+/* ══════════════════════════════════════════════
+   PRECIO
+══════════════════════════════════════════════ */
+function updatePrice() {
+  const dur    = parseFloat(document.getElementById('duration')?.value || MIN_HRS);
+  const isPack = !!packMode;
+  const rate   = isPack ? PRICE_PACK : PRICE_PUNTUAL;
+  const total  = dur * rate;
+  document.getElementById('priceRateVal').textContent = eur(rate);
+  document.getElementById('totalPrice').textContent   = eur(total);
+  const durEl = document.getElementById('priceDurVal');
+  if (durEl) durEl.textContent = dur % 1 === 0 ? `${dur} h` : `${dur} h`;
+  // Re-render calendar so end-of-day slots revalidate
+  renderCalendar();
+}
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('duration')?.addEventListener('change', updatePrice);
+});
+
+/* ══════════════════════════════════════════════
+   CONFIRMAR RESERVA
+══════════════════════════════════════════════ */
+document.getElementById('confirmBtn').addEventListener('click',()=>{
+  const name  = document.getElementById('clientName').value.trim();
+  const phone = document.getElementById('clientPhone').value.trim();
+  const priv  = document.getElementById('privacyCheck').checked;
+  if (!name || !phone) { showToast('Por favor, introduce tu nombre y teléfono.'); return; }
+  if (!priv) { showToast('Debes aceptar la política de privacidad para continuar.'); return; }
+  if (!selectedSlot) return;
+
+  const dur    = parseFloat(document.getElementById('duration').value);
+  const isPack = !!packMode;
+  const rate   = isPack ? PRICE_PACK : PRICE_PUNTUAL;
+  const total  = dur * rate;
+  const dl     = selectedSlot.date.toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'});
+
+  document.getElementById('modalSub').textContent = `${name} · ${dl} a las ${selectedSlot.time}`;
+  document.getElementById('modalSummary').innerHTML = `
+    <div class="price-row"><span>Fecha</span><span>${dl}</span></div>
+    <div class="price-row"><span>Hora</span><span>${selectedSlot.time}</span></div>
+    <div class="price-row"><span>Duración</span><span>${dur} h</span></div>
+    <div class="price-row"><span>Precio/hora</span><span>${eur(rate)}</span></div>
+    <div class="price-total"><span>Total</span><span>${eur(total)}</span></div>
+  `;
+  document.getElementById('modalContent').style.display='block';
+  document.getElementById('modalSuccess').style.display='none';
+  document.getElementById('confirmModal').classList.add('open');
+});
+
+function finalConfirm() {
+  const dStr = fmtDate(selectedSlot.date);
+  const key  = `${dStr} ${selectedSlot.time}`;
+  const dur = parseFloat(document.getElementById('duration').value);
+  reservations[key] = { dur, type: packMode ? 'pack' : 'single' };
+  document.getElementById('modalContent').style.display='none';
+  document.getElementById('modalSuccess').style.display='block';
+  document.getElementById('clientName').value='';
+  document.getElementById('clientPhone').value='';
+  document.getElementById('privacyCheck').checked=false;
+  packMode=null; clearSelection(); renderCalendar();
+}
+
+/* ══════════════════════════════════════════════
+   MODO PACK
+══════════════════════════════════════════════ */
+function activatePackMode(pack) {
+  packMode = pack;
+  showToast(`Modo ${pack.name} activado. Elige tus citas en el calendario.`);
+  document.getElementById('reservar').scrollIntoView({behavior:'smooth'});
+  renderCalendar();
+}
+
+function activateCustomPackMode() {
+  const hours = parseFloat(document.getElementById('packHours').value);
+  const freq  = parseFloat(document.getElementById('packFreq').value);
+  const monthly = calcMonthly(hours, freq);
+  activatePackMode({ hours, freq, monthly, name: 'Pack personalizado' });
+}
+
+/* ══════════════════════════════════════════════
+   PACK MODAL (no-calendar flow)
+══════════════════════════════════════════════ */
+function openPackModal(pack) {
+  document.getElementById('packModalTitle').textContent = pack.name;
+  document.getElementById('packModalSummary').innerHTML = `
+    <div class="price-row"><span>Horas/sesión</span><span>${pack.hours} h</span></div>
+    <div class="price-row"><span>Precio/hora</span><span>12,00 €</span></div>
+    <div class="price-total"><span>Importe mensual</span><span>${eur(pack.monthly)}</span></div>
+  `;
+  document.getElementById('packModalContent').style.display='block';
+  document.getElementById('packModalSuccess').style.display='none';
+  document.getElementById('packModal').classList.add('open');
+}
+
+function finalPackConfirm() {
+  const name  = document.getElementById('packName').value.trim();
+  const phone = document.getElementById('packPhone').value.trim();
+  const priv  = document.getElementById('packPrivacy').checked;
+  if (!name || !phone) { showToast('Por favor, introduce tu nombre y teléfono.'); return; }
+  if (!priv) { showToast('Debes aceptar la política de privacidad.'); return; }
+  document.getElementById('packModalContent').style.display='none';
+  document.getElementById('packModalSuccess').style.display='block';
+}
+
+/* ══════════════════════════════════════════════
+   CONFIGURADOR COLAPSABLE
+══════════════════════════════════════════════ */
+function toggleConfigurator() {
+  const btn = document.getElementById('configToggle');
+  const box = document.getElementById('packConfigurator');
+  btn.classList.toggle('open'); box.classList.toggle('open');
+}
+
+function calcMonthly(hours, freq) {
+  return Math.round(hours * freq * 4.33 * PRICE_PACK * 100) / 100;
+}
+function calcPack() {
+  const hours = parseFloat(document.getElementById('packHours').value);
+  const freq  = parseFloat(document.getElementById('packFreq').value);
+  const monthly = calcMonthly(hours, freq);
+  const semestral = Math.round(monthly * 6 * 0.95 * 100) / 100;
+  const saving = Math.round((monthly*6 - semestral)*100)/100;
+  const sessLabel = freq===1?'~4 ses.':freq===0.5?'~2 ses.':'~1 ses.';
+
+  document.getElementById('monthlyAmt').innerHTML=`${eur(monthly)} <span>/ mes</span>`;
+  document.getElementById('monthlyDetail').textContent=`${sessLabel} × ${hours} h × 12 €`;
+  document.getElementById('semestralAmt').innerHTML=`${eur(semestral)} <span>/ semestre</span>`;
+  document.getElementById('saveBadge').textContent=`Ahorras ${eur(saving)}`;
+  document.getElementById('semestralDetail').textContent=`6 × ${eur(monthly)} − 5%`;
+}
+document.getElementById('packHours').addEventListener('change',calcPack);
+document.getElementById('packFreq').addEventListener('change',calcPack);
+['monthlyOpt','semestralOpt'].forEach(id=>document.getElementById(id).addEventListener('click',()=>{
+  document.getElementById('monthlyOpt').classList.toggle('active', id==='monthlyOpt');
+  document.getElementById('semestralOpt').classList.toggle('active', id==='semestralOpt');
+}));
+
+/* ══════════════════════════════════════════════
+   BEFORE / AFTER SLIDERS
+══════════════════════════════════════════════ */
+document.querySelectorAll('[data-slider]').forEach(slider => {
+  const after   = slider.querySelector('.ba-after');
+  const divider = slider.querySelector('.ba-divider');
+  const handle  = slider.querySelector('.ba-handle');
+  let dragging  = false;
+
+  function setPos(pct) {
+    pct = Math.max(5, Math.min(95, pct));
+    after.style.clipPath   = `inset(0 ${100-pct}% 0 0)`;
+    divider.style.left     = pct + '%';
+    handle.style.left      = pct + '%';
+  }
+  function fromEvent(e) {
+    const r = slider.getBoundingClientRect();
+    const x = (e.touches ? e.touches[0].clientX : e.clientX) - r.left;
+    return (x / r.width) * 100;
+  }
+  slider.addEventListener('mousedown',  e=>{ dragging=true; setPos(fromEvent(e)); });
+  slider.addEventListener('touchstart', e=>{ dragging=true; setPos(fromEvent(e)); },{passive:true});
+  window.addEventListener('mousemove',  e=>{ if(dragging) setPos(fromEvent(e)); });
+  window.addEventListener('touchmove',  e=>{ if(dragging) setPos(fromEvent(e)); },{passive:true});
+  window.addEventListener('mouseup',    ()=>{ dragging=false; });
+  window.addEventListener('touchend',   ()=>{ dragging=false; });
+  setPos(50);
+});
+
+/* ══════════════════════════════════════════════
+   UTILS
+══════════════════════════════════════════════ */
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{ if(e.target===o) o.classList.remove('open'); }));
+function showToast(msg) {
+  const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+/* ══════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════ */
+renderCalendar();
+calcPack();
+</script>
+</body>
+</html>
