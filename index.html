@@ -131,14 +131,18 @@
     .day-col__date { text-align: center; font-size: 13px; font-weight: 600; padding: 6px; border-radius: var(--r-sm); margin-bottom: 4px; }
     .day-col__date.today { background: var(--accent); color: #fff; }
 
-    .slot { padding: 7px 3px; border-radius: var(--r-sm); text-align: center; font-size: 11px; font-weight: 500; cursor: pointer; transition: background .15s, transform .1s; border: 1.5px solid transparent; line-height: 1.3; }
+    .slot { padding: 7px 3px; border-radius: var(--r-sm); text-align: center; font-size: 11px; font-weight: 500; cursor: default; border: 1.5px solid transparent; line-height: 1.3; }
     .slot--available { background: var(--secondary); color: #1a6b19; border-color: var(--secondary-d); }
-    .slot--available:hover { background: var(--secondary-d); transform: scale(1.04); }
-    .slot--taken { background: #F3F4F6; color: #9CA3AF; cursor: not-allowed; }
-    .slot--buffer { background: #fef9c3; color: #92400e; cursor: not-allowed; font-size: 10px; }
-    .slot--selected { background: var(--accent); color: #fff; border-color: var(--accent-d); }
+    .slot--taken { background: #F3F4F6; color: #c4c4c4; }
     .slot--pack { background: #ede9fe; color: #5b21b6; border-color: #c4b5fd; }
-    .slot--pack:hover { background: #ddd6fe; }
+
+    /* Leyenda del calendario */
+    .cal-legend { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 14px; padding: 12px 16px; background: var(--surface-2); border-radius: var(--r-md); border: 1px solid var(--border); }
+    .cal-legend__item { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--text-muted); font-weight: 500; }
+    .cal-legend__dot { width: 14px; height: 14px; border-radius: 4px; flex-shrink: 0; border: 1.5px solid transparent; }
+    .cal-legend__dot--free   { background: var(--secondary); border-color: var(--secondary-d); }
+    .cal-legend__dot--taken  { background: #F3F4F6; border-color: var(--border); }
+    .cal-legend__dot--pack   { background: #ede9fe; border-color: #c4b5fd; }
 
     /* ── PANEL RESERVA ─────────────────────────────────────── */
     .booking-panel { background: #fff; border: 1px solid var(--border); border-radius: var(--r-lg); padding: 24px; box-shadow: var(--sh-sm); position: sticky; top: 80px; }
@@ -518,10 +522,11 @@
   <div class="container">
     <div class="section__header">
       <h2>Reserva tu cita</h2>
-      <p>Mínimo <strong>2 horas · 15 €/h</strong>. Hay 30 min de margen entre citas. Elige día, hora y duración.</p>
+      <p>Consulta disponibilidad en el calendario y rellena el formulario. Mínimo <strong>2 horas · 15 €/h</strong>.</p>
     </div>
     <div class="booking-layout">
 
+      <!-- CALENDARIO (solo visual) -->
       <div>
         <div class="calendar-nav">
           <button class="calendar-nav-btn" id="prevWeek">← Anterior</button>
@@ -529,48 +534,60 @@
           <button class="calendar-nav-btn" id="nextWeek">Siguiente →</button>
         </div>
         <div class="week-grid" id="weekGrid"></div>
+
+        <!-- LEYENDA -->
+        <div class="cal-legend">
+          <div class="cal-legend__item"><div class="cal-legend__dot cal-legend__dot--free"></div>Disponible</div>
+          <div class="cal-legend__item"><div class="cal-legend__dot cal-legend__dot--taken"></div>Ocupado / Pasado</div>
+          <div class="cal-legend__item"><div class="cal-legend__dot cal-legend__dot--pack"></div>Pack activo</div>
+        </div>
       </div>
 
+      <!-- FORMULARIO -->
       <div class="booking-panel">
         <h3>Tu reserva</h3>
-        <div id="noSlotMsg" class="no-slot-msg">Selecciona una franja en el calendario para continuar.</div>
-        <div id="bookingForm" style="display:none">
-          <div id="slotTypeBadge"></div>
-          <div class="brow">
-            <label>Fecha y hora</label>
-            <div id="selectedSlotDisplay" style="font-weight:600;font-size:15px;color:var(--accent-d)"></div>
-          </div>
-          <div class="brow">
-            <label for="duration">Duración</label>
-            <select id="duration" onchange="updatePrice()">
-              <option value="2" selected>2 horas</option>
-              <option value="2.5">2 horas 30 min</option>
-              <option value="3">3 horas</option>
-              <option value="3.5">3 horas 30 min</option>
-              <option value="4">4 horas</option>
-              <option value="5">5 horas</option>
-              <option value="6">6 horas</option>
-            </select>
-          </div>
-          <div class="brow">
-            <label for="clientName">Tu nombre</label>
-            <input type="text" id="clientName" placeholder="María García" autocomplete="name" />
-          </div>
-          <div class="brow">
-            <label for="clientPhone">Teléfono de contacto</label>
-            <input type="tel" id="clientPhone" placeholder="600 000 000" autocomplete="tel" />
-          </div>
-          <div class="privacy-check">
-            <input type="checkbox" id="privacyCheck" />
-            <label for="privacyCheck">He leído y acepto la <a href="#privacidad">política de privacidad</a>. Autorizo el uso de mi teléfono únicamente para gestionar esta reserva.</label>
-          </div>
-          <div class="price-box">
-            <div class="price-row"><span>Duración</span><span id="priceDurVal">2 h</span></div>
-            <div class="price-row" id="priceRateRow"><span>Precio/hora</span><span id="priceRateVal">15,00 €</span></div>
-            <div class="price-total"><span>Total</span><span id="totalPrice">30,00 €</span></div>
-          </div>
-          <button class="btn-confirm" id="confirmBtn">Confirmar reserva</button>
+        <div id="slotTypeBadge"></div>
+
+        <div class="brow">
+          <label for="bookDate">Fecha</label>
+          <input type="date" id="bookDate" />
         </div>
+        <div class="brow">
+          <label for="bookTime">Hora de inicio</label>
+          <select id="bookTime">
+            <option value="">— elige fecha primero —</option>
+          </select>
+        </div>
+        <div class="brow">
+          <label for="duration">Duración</label>
+          <select id="duration" onchange="updatePrice()">
+            <option value="2" selected>2 horas</option>
+            <option value="2.5">2 horas 30 min</option>
+            <option value="3">3 horas</option>
+            <option value="3.5">3 horas 30 min</option>
+            <option value="4">4 horas</option>
+            <option value="5">5 horas</option>
+            <option value="6">6 horas</option>
+          </select>
+        </div>
+        <div class="brow">
+          <label for="clientName">Tu nombre</label>
+          <input type="text" id="clientName" placeholder="María García" autocomplete="name" />
+        </div>
+        <div class="brow">
+          <label for="clientPhone">Teléfono de contacto</label>
+          <input type="tel" id="clientPhone" placeholder="600 000 000" autocomplete="tel" />
+        </div>
+        <div class="privacy-check">
+          <input type="checkbox" id="privacyCheck" />
+          <label for="privacyCheck">He leído y acepto la <a href="#privacidad">política de privacidad</a>. Autorizo el uso de mi teléfono únicamente para gestionar esta reserva.</label>
+        </div>
+        <div class="price-box">
+          <div class="price-row"><span>Duración</span><span id="priceDurVal">2 h</span></div>
+          <div class="price-row"><span>Precio/hora</span><span id="priceRateVal">15,00 €</span></div>
+          <div class="price-total"><span>Total</span><span id="totalPrice">30,00 €</span></div>
+        </div>
+        <button class="btn-confirm" id="confirmBtn">Confirmar reserva</button>
       </div>
     </div>
   </div>
@@ -905,7 +922,7 @@ function slotStatus(dateStr, timeStr) {
 }
 
 /* ══════════════════════════════════════════════
-   RENDER CALENDAR
+   RENDER CALENDAR (solo visual, sin clics)
 ══════════════════════════════════════════════ */
 function renderCalendar() {
   const ws  = weekStart(weekOffset);
@@ -924,7 +941,6 @@ function renderCalendar() {
     const isToday = date.getTime() === today.getTime();
 
     const col = document.createElement('div'); col.className = 'day-col';
-
     const hdr = document.createElement('div'); hdr.className='day-col__header'; hdr.textContent=DAYS[d]; col.appendChild(hdr);
     const dDiv = document.createElement('div'); dDiv.className='day-col__date'+(isToday?' today':''); dDiv.textContent=date.getDate(); col.appendChild(dDiv);
 
@@ -933,56 +949,105 @@ function renderCalendar() {
       const mm = String(m%60).padStart(2,'0');
       const t  = `${hh}:${mm}`;
       const el = document.createElement('div');
-      el.dataset.date = dStr; el.dataset.time = t;
+      el.textContent = t;
 
       if (isPast) {
-        el.className='slot slot--taken'; el.textContent=t;
+        el.className = 'slot slot--taken';
       } else {
         const st = slotStatus(dStr, t);
-        if (st==='taken') {
-          el.className='slot slot--taken';
+        if (st === 'taken') {
+          el.className = 'slot slot--taken';
         } else {
-          el.className = packMode ? 'slot slot--pack slot--available' : 'slot slot--available';
-          el.addEventListener('click', ()=>selectSlot(date,t,el));
+          // check if this slot belongs to a pack reservation
+          const keyExact = `${dStr} ${t}`;
+          const isPack = reservations[keyExact]?.type === 'pack';
+          el.className = isPack ? 'slot slot--pack' : 'slot slot--available';
         }
-        el.textContent=t;
       }
       col.appendChild(el);
     }
     grid.appendChild(col);
   }
+
+  // Refresh available times for the selected date
+  populateTimes();
 }
 
-function selectSlot(date, time, el) {
-  document.querySelectorAll('.slot--selected').forEach(s=>{
-    s.classList.remove('slot--selected');
-    s.classList.add(packMode ? 'slot--pack' : 'slot--available');
-  });
-  el.classList.remove('slot--available','slot--pack'); el.classList.add('slot--selected');
-  selectedSlot = { date, time };
-
-  const dl = date.toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'});
-  document.getElementById('selectedSlotDisplay').textContent=`${dl} a las ${time}`;
-  document.getElementById('noSlotMsg').style.display='none';
-  document.getElementById('bookingForm').style.display='block';
-
-  const isPack = !!packMode;
-  updatePrice();
-  document.getElementById('slotTypeBadge').innerHTML = isPack
-    ? `<span class="slot-type-badge badge--pack">📦 ${packMode.name}</span>`
-    : `<span class="slot-type-badge badge--single">📅 Cita puntual</span>`;
-
-  document.getElementById('reservar').scrollIntoView({behavior:'smooth',block:'start'});
-}
-
-document.getElementById('prevWeek').addEventListener('click',()=>{ weekOffset--; clearSelection(); renderCalendar(); });
+document.getElementById('prevWeek').addEventListener('click',()=>{ weekOffset--; renderCalendar(); });
 document.getElementById('nextWeek').addEventListener('click',()=>{ weekOffset++; renderCalendar(); });
 
-function clearSelection() {
-  selectedSlot=null;
-  document.getElementById('noSlotMsg').style.display='block';
-  document.getElementById('bookingForm').style.display='none';
+/* ══════════════════════════════════════════════
+   DATE / TIME PICKERS
+══════════════════════════════════════════════ */
+function initDatePicker() {
+  const input = document.getElementById('bookDate');
+  // Min = today
+  const today = new Date();
+  input.min = fmtDate(today);
+  // Max = 3 months ahead
+  const max = new Date(); max.setMonth(max.getMonth()+3);
+  input.max = fmtDate(max);
+
+  input.addEventListener('change', () => {
+    populateTimes();
+    updatePrice();
+    // Jump calendar to the week containing chosen date
+    const chosen = new Date(input.value + 'T00:00');
+    const ws = weekStart(0);
+    const diff = Math.floor((chosen - ws) / (7*24*3600*1000));
+    weekOffset = diff;
+    renderCalendar();
+  });
 }
+
+function populateTimes() {
+  const sel   = document.getElementById('bookTime');
+  const dateV = document.getElementById('bookDate').value;
+  sel.innerHTML = '';
+
+  if (!dateV) {
+    sel.innerHTML = '<option value="">— elige fecha primero —</option>';
+    return;
+  }
+
+  const dur = parseFloat(document.getElementById('duration').value || MIN_HRS);
+  const today = new Date(); today.setHours(0,0,0,0);
+  const chosen = new Date(dateV + 'T00:00');
+  const isPast  = chosen < today;
+
+  if (isPast) {
+    sel.innerHTML = '<option value="">Fecha pasada</option>';
+    return;
+  }
+
+  let count = 0;
+  for (let m = WORK_START; m < WORK_END; m += SLOT_INT) {
+    const hh = String(Math.floor(m/60)).padStart(2,'0');
+    const mm = String(m%60).padStart(2,'0');
+    const t  = `${hh}:${mm}`;
+    const st = slotStatus(dateV, t);
+    // Check duration fits
+    const endMin = m + dur * 60;
+    if (st === 'available' && endMin <= WORK_END) {
+      sel.appendChild(new Option(t, t));
+      count++;
+    }
+  }
+
+  if (count === 0) {
+    sel.innerHTML = '<option value="">Sin horas disponibles ese día</option>';
+  } else {
+    sel.insertBefore(new Option('— elige hora —', ''), sel.firstChild);
+    sel.selectedIndex = 0;
+  }
+  updatePrice();
+}
+
+// Re-populate times when duration changes
+document.getElementById('duration').addEventListener('change', () => {
+  populateTimes();
+  updatePrice();
+});
 
 /* ══════════════════════════════════════════════
    PRECIO
@@ -995,35 +1060,34 @@ function updatePrice() {
   document.getElementById('priceRateVal').textContent = eur(rate);
   document.getElementById('totalPrice').textContent   = eur(total);
   const durEl = document.getElementById('priceDurVal');
-  if (durEl) durEl.textContent = dur % 1 === 0 ? `${dur} h` : `${dur} h`;
-  // Re-render calendar so end-of-day slots revalidate
-  renderCalendar();
+  if (durEl) durEl.textContent = `${dur} h`;
 }
-document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('duration')?.addEventListener('change', updatePrice);
-});
 
 /* ══════════════════════════════════════════════
    CONFIRMAR RESERVA
 ══════════════════════════════════════════════ */
 document.getElementById('confirmBtn').addEventListener('click',()=>{
-  const name  = document.getElementById('clientName').value.trim();
-  const phone = document.getElementById('clientPhone').value.trim();
-  const priv  = document.getElementById('privacyCheck').checked;
-  if (!name || !phone) { showToast('Por favor, introduce tu nombre y teléfono.'); return; }
-  if (!priv) { showToast('Debes aceptar la política de privacidad para continuar.'); return; }
-  if (!selectedSlot) return;
+  const name   = document.getElementById('clientName').value.trim();
+  const phone  = document.getElementById('clientPhone').value.trim();
+  const priv   = document.getElementById('privacyCheck').checked;
+  const dateV  = document.getElementById('bookDate').value;
+  const timeV  = document.getElementById('bookTime').value;
+
+  if (!dateV || !timeV) { showToast('Elige una fecha y hora disponible.'); return; }
+  if (!name || !phone)  { showToast('Por favor, introduce tu nombre y teléfono.'); return; }
+  if (!priv)            { showToast('Debes aceptar la política de privacidad para continuar.'); return; }
 
   const dur    = parseFloat(document.getElementById('duration').value);
   const isPack = !!packMode;
   const rate   = isPack ? PRICE_PACK : PRICE_PUNTUAL;
   const total  = dur * rate;
-  const dl     = selectedSlot.date.toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'});
+  const date   = new Date(dateV + 'T00:00');
+  const dl     = date.toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'});
 
-  document.getElementById('modalSub').textContent = `${name} · ${dl} a las ${selectedSlot.time}`;
+  document.getElementById('modalSub').textContent = `${name} · ${dl} a las ${timeV}`;
   document.getElementById('modalSummary').innerHTML = `
     <div class="price-row"><span>Fecha</span><span>${dl}</span></div>
-    <div class="price-row"><span>Hora</span><span>${selectedSlot.time}</span></div>
+    <div class="price-row"><span>Hora</span><span>${timeV}</span></div>
     <div class="price-row"><span>Duración</span><span>${dur} h</span></div>
     <div class="price-row"><span>Precio/hora</span><span>${eur(rate)}</span></div>
     <div class="price-total"><span>Total</span><span>${eur(total)}</span></div>
@@ -1034,16 +1098,19 @@ document.getElementById('confirmBtn').addEventListener('click',()=>{
 });
 
 function finalConfirm() {
-  const dStr = fmtDate(selectedSlot.date);
-  const key  = `${dStr} ${selectedSlot.time}`;
-  const dur = parseFloat(document.getElementById('duration').value);
-  reservations[key] = { dur, type: packMode ? 'pack' : 'single' };
+  const dateV = document.getElementById('bookDate').value;
+  const timeV = document.getElementById('bookTime').value;
+  const dur   = parseFloat(document.getElementById('duration').value);
+  reservations[`${dateV} ${timeV}`] = { dur, type: packMode ? 'pack' : 'single' };
+
   document.getElementById('modalContent').style.display='none';
   document.getElementById('modalSuccess').style.display='block';
   document.getElementById('clientName').value='';
   document.getElementById('clientPhone').value='';
   document.getElementById('privacyCheck').checked=false;
-  packMode=null; clearSelection(); renderCalendar();
+  document.getElementById('bookDate').value='';
+  document.getElementById('bookTime').innerHTML='<option value="">— elige fecha primero —</option>';
+  packMode=null; renderCalendar();
 }
 
 /* ══════════════════════════════════════════════
@@ -1051,7 +1118,8 @@ function finalConfirm() {
 ══════════════════════════════════════════════ */
 function activatePackMode(pack) {
   packMode = pack;
-  showToast(`Modo ${pack.name} activado. Elige tus citas en el calendario.`);
+  updatePrice();
+  showToast(`Modo ${pack.name} activado. Elige fecha y hora en el formulario.`);
   document.getElementById('reservar').scrollIntoView({behavior:'smooth'});
   renderCalendar();
 }
@@ -1164,6 +1232,7 @@ function showToast(msg) {
    INIT
 ══════════════════════════════════════════════ */
 renderCalendar();
+initDatePicker();
 calcPack();
 </script>
 </body>
